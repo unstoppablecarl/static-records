@@ -10,7 +10,7 @@ export function deepFreeze<T extends Record<string | symbol, any>>(obj: T): T {
     const value = obj[name]
 
     if (
-      !Object.isFrozen(obj) &&
+      !Object.isFrozen(value) &&
       // do not freeze other static records that are child properties of this static record
       // they will be frozen by their own lock() function
       !isStaticRecord(value)

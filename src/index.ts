@@ -3,7 +3,7 @@ import { deepFreeze } from './deepFreeze'
 export const staticKey: symbol = Symbol('record_type')
 
 export function isStaticRecord(obj: any | Record<string | symbol, unknown>) {
-  return obj[staticKey] === true
+  return obj[staticKey] !== undefined
 }
 
 export function getRecordType(obj: any) {
@@ -29,13 +29,11 @@ export type StaticRecords<Item extends IdItem> = {
 
 export type Options = {
   deepFreeze?: false | (<T extends Record<string | symbol, any>>(obj: T) => T),
-  recordTypeKey?: string,
 }
 
 export function staticRecords<
   Item extends IdItem,
-  Opt extends Options,
->(recordType: string, opt?: Opt): StaticRecords<Item> {
+>(recordType: string, opt?: Options): StaticRecords<Item> {
   type ItemNoId = Omit<Item, 'id'>
   type Factory = () => ItemNoId
 
@@ -43,8 +41,6 @@ export function staticRecords<
   const definers: Map<string, Factory> = new Map()
   const freezer = opt?.deepFreeze ?? deepFreeze
   let locked = false
-
-  const recordTypeKey = opt?.recordTypeKey
 
   function define(id: string, factory: Factory): Item {
     if (locked) {

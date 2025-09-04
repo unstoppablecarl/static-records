@@ -188,7 +188,7 @@ describe('staticRecords() unit tests', async () => {
   it('isStaticRecord()', async () => {
     expect(isStaticRecord(99)).toBe(false)
     expect(isStaticRecord('foo')).toBe(false)
-    expect(isStaticRecord({id: 'foo'})).toBe(true)
-    expect(isStaticRecord({id: 'foo', [staticKey]: true})).toBe(false)
+    expect(isStaticRecord({id: 'foo'})).toBe(false)
+    expect(isStaticRecord({id: 'foo', [staticKey]: true})).toBe(true)
   })
 })
