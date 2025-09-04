@@ -1,17 +1,10 @@
 import { defineConfig } from 'vitest/config'
-import vue from '@vitejs/plugin-vue'
 import { fileURLToPath } from 'node:url'
 
 export default defineConfig({
-  define: {
-    __DEV__: true,
-    __TEST__: true,
-    __BROWSER__: true,
-    __USE_DEVTOOLS__: false,
-  },
-  plugins: [vue()],
+  plugins: [],
   test: {
-    include: ['src/**/*.{test,spec}.ts', 'tests/**/*.{test,spec}.ts'],
+    include: ['tests/**/*.test.ts'],
     setupFiles: [
       fileURLToPath(new URL('./tests/vitest-setup.ts', import.meta.url)),
     ],
@@ -19,7 +12,7 @@ export default defineConfig({
     typecheck: {
       enabled: true,
       tsconfig: 'tsconfig.json',
-      include: ['src/**/*.{test,spec}.ts', 'tests/**/*.{test,spec}.ts'],
+      include: ['tests/**/*.test.ts'],
     },
     mockReset: true,
     coverage: {
@@ -27,7 +20,7 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'lcovonly', 'html'],
       all: true,
-      include: ['src/**/*', 'tests/**/*.vue'],
+      include: ['src/**/*'],
       exclude: ['tests/**/*.ts'],
     },
   },

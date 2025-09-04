@@ -1,14 +1,16 @@
 # Static Records
 
-Static immutable relational data for js.
+A tiny package for static immutable data for js.
+
+**Supports**
+ - Circular references
+ - Out of order definitions
 
 ## Installation
 
 `$ npm i static-records`
 
-## Primary Use Case
-
-When defining relational immutable static data. Specifically when it has circular references or references in the same file out of order.
+## Example
 
 `person-data.ts`
 
@@ -43,7 +45,7 @@ export const SUE = PEOPLE.define(
     emergency_contact: JIM,
   }),
 )
-// locks the data with Object.freeze()
+// locks the data with deep Object.freeze()
 PEOPLE.lock()
 ```
 
@@ -83,7 +85,7 @@ export const VAN = VEHICLES.define(
 VEHICLES.lock()
 ```
 
-`somewhere.ts`
+`use-example.ts`
 
 ```ts
 import { JIM } from './person-data'
@@ -120,50 +122,41 @@ export const JIM = CONTACTS.define(
   }),
 )
 
+CONTACTS.locked() // false
+
 // always lock before using
 CONTACTS.lock()
 
+CONTACTS.locked() // true
 CONTACTS.get('JIM') // JIM
 CONTACTS.has('JIM') // true
 CONTACTS.toArray() // [JIM]
 CONTACTS.toObject() // {"JIM": JIM}
-
-CONTACTS.forEach((item: Contact) => {})
-CONTACTS.map((item: Contact) => {})
-CONTACTS.filter((item: Contact) => {})
 ```
 
-## Custom DeepFreeze
+## Freezing
+`Object.freeze()` is applied to all records and their children after `lock()` is called.
+
+### Custom Deep Freeze
 You can use a custom `deepFreeze` function if needed.
 
-```ts
-import { staticRecords, isStaticRecord } from 'static-records'
+See the [default deepFreeze Implementation](src/deepFreeze.ts)
 
-function customDeepFreeze<T extends Record<string | symbol, any>>(object: T): T {
-  const propNames = Reflect.ownKeys(object)
-  Object.freeze(object)
-  for (const name of propNames) {
-    const value = object[name]
-    const type = typeof value
-    if ((type === 'object' || type === 'function') &&
-      !Object.isFrozen(value) &&
-      !value.isSpecial &&
-      isStaticRecord(value)
-    ) {
-      deepFreeze(value)
-    }
-  }
-  return object
+```ts
+
+// default implementation
+function myCustomDeepFreeze(obj) {
+  // ...
+  return obj
 }
 
-export const CONTACTS = staticRecords<Contact>('Contact', {deepFreeze: customDeepFreeze})
+export const CONTACTS = staticRecords<Contact>('Contact', { deepFreeze: customDeepFreeze })
 ```
-If you want to disable the deep freeze you can do:
+
+### Disable Deep Freeze
 
 ```ts
-export const CONTACTS = staticRecords<Contact>('Contact', { deepFreeze: (input) => input })
-
-
+export const CONTACTS = staticRecords<Contact>('Contact', { deepFreeze: false })
 ```
 
 ## Building
