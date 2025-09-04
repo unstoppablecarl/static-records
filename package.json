@@ -1,0 +1,72 @@
+{
+  "name": "static-records",
+  "type": "module",
+  "version": "1.0.0",
+  "packageManager": "pnpm@10.14.0",
+  "description": "Static immutable relational data for js",
+  "author": {
+    "name": "Carl Olsen",
+    "email": "unstoppablecarlolsen@gmail.com"
+  },
+  "license": "MIT",
+  "keywords": [
+    "static",
+    "data"
+  ],
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.mjs"
+    }
+  },
+  "files": [
+    "dist/*",
+    "types/*",
+    "pnpm-lock.yaml",
+    "LICENSE",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "rollup -c",
+    "test": "vitest --coverage",
+    "test:mutation": "stryker run",
+    "generate:docs": "ts-readme"
+  },
+  "peerDependenciesMeta": {
+    "typescript": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^28.0.6",
+    "@rollup/plugin-node-resolve": "^16.0.1",
+    "@rollup/plugin-replace": "^6.0.2",
+    "@rollup/plugin-terser": "^0.4.4",
+    "@stryker-mutator/core": "^9.0.1",
+    "@stryker-mutator/typescript-checker": "^9.0.1",
+    "@stryker-mutator/vitest-runner": "^9.0.1",
+    "@types/node": "^24.0.10",
+    "@vitejs/plugin-vue": "^6.0.0",
+    "@vitest/coverage-v8": "^3.2.4",
+    "esbuild": "^0.23.0",
+    "pascalcase": "^2.0.0",
+    "rollup": "^4.20.0",
+    "rollup-plugin-delete": "^3.0.1",
+    "rollup-plugin-dts": "^6.1.1",
+    "rollup-plugin-esbuild": "^6.1.1",
+    "rollup-plugin-typescript2": "^0.36.0",
+    "typescript": "^5.9.2",
+    "vitest": "3.2.4"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/unstoppablecarl/static-records.git"
+  },
+  "bugs": {
+    "url": "https://github.com/unstoppablecarl/static-records/issues"
+  }
+}
