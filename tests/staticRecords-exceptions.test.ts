@@ -27,7 +27,7 @@ describe('staticRecords() exceptions', async () => {
         name: 'Van',
       }),
     )
-    }).toThrowError('Cannot define records after locking Static Records: "VEHICLE".')
+    }).toThrowError('Cannot define() after locking Static Records "VEHICLE".')
   })
 
   it('cannot lock() more than once', async () => {
@@ -44,6 +44,6 @@ describe('staticRecords() exceptions', async () => {
     expect(() => {
 
       VEHICLES.lock()
-    }).toThrowError('Cannot lock when Static Records: "VEHICLE" are already locked.')
+    }).toThrowError('Cannot lock() when Static Records "VEHICLE" are already locked.')
   })
 })

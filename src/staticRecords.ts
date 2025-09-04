@@ -31,69 +31,56 @@ export function staticRecords<
   const freezer = opt?.deepFreeze ?? deepFreeze
   let locked = false
 
-  function define(id: string, factory: Factory): Item {
-    if (locked) {
-      throw new Error(`Cannot define records after locking Static Records: "${recordType}".`)
-    }
-    const item = {
-      id,
-      [staticKey]: recordType,
-    }
-    staticData[id] = item as Item
-    definers.set(id, factory)
-
-    return item as Item
-  }
-
-  function has(id: string): boolean {
-    return staticData[id] !== undefined
-  }
-
-  function get(id: string): Item {
-    const result = staticData[id]
-    if (result === undefined) {
-      throw new Error(`Cannot find ${id} in Static Records: "${recordType}"`)
-    }
-
-    return result
-  }
-
-  function lock(): void {
-    if (locked) {
-      throw new Error(`Cannot lock when Static Records: "${recordType}" are already locked.`)
-    }
-    Object.values(staticData).forEach(item => {
-      const factory = definers.get(item.id) as Factory
-      Object.assign(
-        item,
-        factory(),
-      )
-      if (freezer) {
-        freezer(item)
-      }
-    })
-
-    // always freeze records object
-    Object.freeze(staticData)
-    definers.clear()
-    locked = true
-  }
-
-  function toObject() {
-    // create unfrozen copy
-    return {
-      ...staticData,
-    }
-  }
-
   return {
-    define,
-    lock,
+    define(id: string, factory: Factory): Item {
+      if (locked) {
+        throw new Error(`Cannot define() after locking Static Records "${recordType}".`)
+      }
+      const item = {
+        id,
+        [staticKey]: recordType,
+      }
+      staticData[id] = item as Item
+      definers.set(id, factory)
 
-    get,
-    has,
+      return item as Item
+    },
+    lock() {
+      if (locked) {
+        throw new Error(`Cannot lock() when Static Records "${recordType}" are already locked.`)
+      }
+      Object.values(staticData).forEach(item => {
+        const factory = definers.get(item.id) as Factory
+        Object.assign(
+          item,
+          factory(),
+        )
+        if (freezer) {
+          freezer(item)
+        }
+      })
+
+      // always freeze records object
+      Object.freeze(staticData)
+      definers.clear()
+      locked = true
+    },
+    get(id: string): Item {
+      const result = staticData[id]
+      if (result === undefined) {
+        throw new Error(`Cannot find id "${id}" in Static Records "${recordType}"`)
+      }
+
+      return result
+    },
+    has: (id: string) => staticData[id] !== undefined,
     locked: () => locked,
-    toObject,
+    toObject() {
+      // create unfrozen copy
+      return {
+        ...staticData,
+      }
+    },
     toArray: () => Object.values(staticData),
   }
 }
