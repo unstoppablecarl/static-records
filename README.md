@@ -1,6 +1,6 @@
 # Static Records
 
-A tiny package for static immutable data for js.
+A tiny package for static immutable js data.
 
 **Supports**
  - Circular references
