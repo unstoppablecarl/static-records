@@ -4,6 +4,6 @@ export function isStaticRecord(obj: any) {
   return obj[staticKey] !== undefined
 }
 
-export function getRecordType(obj: any) {
+export function getRecordType(obj: any): string | undefined {
   return obj[staticKey]
 }
