@@ -3,17 +3,20 @@ import { staticKey } from './staticKey'
 
 export interface IdItem {
   id: string,
-  [staticKey]: string | boolean,
+}
+
+export type WithKey<T> = T & {
+  [staticKey]: string
 }
 
 export type StaticRecords<Item extends IdItem> = {
-  define(id: string, factory: () => Omit<Item, 'id'>): Item,
-  get(id: string): Item,
+  define(id: string, factory: () => Omit<Item, 'id'>): WithKey<Item>,
+  get(id: string): WithKey<Item>,
   has(id: string): boolean,
   lock(): void,
   locked(): boolean,
-  toArray(): Item[],
-  toObject(): Record<string, Item>,
+  toArray(): WithKey<Item>[],
+  toObject(): Record<string, WithKey<Item>>,
 }
 
 export type Options = {
@@ -23,27 +26,28 @@ export type Options = {
 export function staticRecords<
   Item extends IdItem,
 >(recordType: string, opt?: Options): StaticRecords<Item> {
-  type ItemNoId = Omit<Item, 'id'>
-  type Factory = () => ItemNoId
+  type Factory = () => Omit<Item, 'id'>
+  type ItemWithKey = WithKey<Item>
 
-  const staticData: Record<string, Item> = {}
+  const staticData: Record<string, ItemWithKey> = {}
   const definers: Map<string, Factory> = new Map()
   const freezer = opt?.deepFreeze ?? deepFreeze
   let locked = false
 
   return {
-    define(id: string, factory: Factory): Item {
+    define(id: string, factory: Factory): ItemWithKey {
       if (locked) {
         throw new Error(`Cannot define() after locking Static Records "${recordType}".`)
       }
       const item = {
         id,
         [staticKey]: recordType,
-      }
-      staticData[id] = item as Item
+      } as ItemWithKey
+
+      staticData[id] = item
       definers.set(id, factory)
 
-      return item as Item
+      return item
     },
     lock() {
       if (locked) {
@@ -65,7 +69,7 @@ export function staticRecords<
       definers.clear()
       locked = true
     },
-    get(id: string): Item {
+    get(id: string): ItemWithKey {
       const result = staticData[id]
       if (result === undefined) {
         throw new Error(`Cannot find id "${id}" in Static Records "${recordType}"`)

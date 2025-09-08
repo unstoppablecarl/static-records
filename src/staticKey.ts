@@ -1,4 +1,4 @@
-export const staticKey: symbol = Symbol('record_type')
+export const staticKey: unique symbol = Symbol('record_type')
 
 export function isStaticRecord(obj: any) {
   return obj[staticKey] !== undefined
