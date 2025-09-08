@@ -163,7 +163,7 @@ export const CONTACTS = staticRecords<Contact>('Contact', { deepFreeze: false })
 The `creator` and `locker` options allow deeper control over object creation.
 
 ```ts
-import { staticKey, staticRecords } from 'static-records'
+import { staticRecords, recordTypeKey } from 'static-records'
 
 type Widget = {
   id: string,
@@ -175,7 +175,7 @@ const WIDGETS = staticRecords<Widget>('Widget', {
   creator: (id: string, recordType: string) => {
     return {
       id,
-      [staticKey]: recordType,
+      [recordTypeKey]: recordType,
     }
   },
   // default implementation
@@ -188,7 +188,7 @@ const WIDGETS = staticRecords<Widget>('Widget', {
 #### Using Classes 
 Static Records can be class instances instead of generic objects.
 ```ts
-import { staticRecords } from 'static-records'
+import { staticRecords, recordTypeKey } from 'static-records'
 
 type SellerInput = {
   firstName?: string,
@@ -196,7 +196,7 @@ type SellerInput = {
 }
 
 export class Seller {
-  readonly [staticKey]: string
+  readonly [recordTypeKey]: string
   readonly id: string
   readonly firstName: string
   readonly lastName: string
@@ -206,7 +206,7 @@ export class Seller {
     recordType: string,
   ) {
     this.id = id
-    this[staticKey] = recordType
+    this[recordTypeKey] = recordType
   }
 
   fullName() {

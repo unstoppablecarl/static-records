@@ -1,12 +1,12 @@
 import { deepFreeze } from './deepFreeze'
-import { staticKey } from './staticKey'
+import { recordTypeKey } from './recordTypeKey'
 
 export interface IdItem {
   id: string,
 }
 
 export type WithKey<T> = T & {
-  [staticKey]: string
+  [recordTypeKey]: string
 }
 
 export type StaticRecords<
@@ -46,7 +46,7 @@ export function staticRecords<
   const creator = opt?.creator ?? ((id, recordType) => {
     return {
       id,
-      [staticKey]: recordType,
+      [recordTypeKey]: recordType,
     } as ItemWithKey
   })
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { getRecordType, isStaticRecord, staticRecords } from '../src'
-import { staticKey } from '../src/staticKey'
+import { recordTypeKey } from '../src/recordTypeKey'
 
 type Vehicle = {
   id: string,
@@ -29,12 +29,12 @@ describe('staticRecords() unit tests', async () => {
     expect(CAR).toEqual({
       id: 'CAR',
       name: 'Car',
-      [staticKey]: 'VEHICLE',
+      [recordTypeKey]: 'VEHICLE',
     })
     expect(VAN).toEqual({
       id: 'VAN',
       name: 'Van',
-      [staticKey]: 'VEHICLE',
+      [recordTypeKey]: 'VEHICLE',
     })
   })
 
@@ -85,7 +85,7 @@ describe('staticRecords() unit tests', async () => {
     expect(isStaticRecord(99)).toBe(false)
     expect(isStaticRecord('foo')).toBe(false)
     expect(isStaticRecord({ id: 'foo' })).toBe(false)
-    expect(isStaticRecord({ id: 'foo', [staticKey]: true })).toBe(true)
+    expect(isStaticRecord({ id: 'foo', [recordTypeKey]: true })).toBe(true)
   })
 
   it('lock()', async () => {

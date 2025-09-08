@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { getRecordType, staticKey } from '../src/staticKey'
+import { getRecordType, recordTypeKey } from '../src/recordTypeKey'
 import { staticRecords } from '../src/staticRecords'
 
 type ThingInput = {
@@ -7,12 +7,12 @@ type ThingInput = {
 }
 
 export class Thing {
-  readonly [staticKey]: string
+  readonly [recordTypeKey]: string
 
   constructor(public readonly id: string,
               recordType: string,
   ) {
-    this[staticKey] = recordType
+    this[recordTypeKey] = recordType
   }
 
   readonly name: string = ''
@@ -47,7 +47,7 @@ describe('staticRecords() options class', async () => {
     expect(FOO).toEqual({
       id: 'FOO',
       name: 'Foo',
-      [staticKey]: 'Thing',
+      [recordTypeKey]: 'Thing',
     })
     expect(FOO).instanceof(Thing)
     expect(FOO.prefixName('something')).toBe('something-Foo')

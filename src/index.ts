@@ -1,2 +1,2 @@
 export * from './staticRecords'
-export { isStaticRecord, getRecordType } from './staticKey'
+export { isStaticRecord, getRecordType, recordTypeKey } from './recordTypeKey'

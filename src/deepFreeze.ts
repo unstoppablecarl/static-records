@@ -1,4 +1,4 @@
-import { isStaticRecord } from './staticKey'
+import { isStaticRecord } from './recordTypeKey'
 
 export function deepFreeze<T extends Record<string | symbol, any>>(obj: T): T {
   const propNames = Reflect.ownKeys(obj)
