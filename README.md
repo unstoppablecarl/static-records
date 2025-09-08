@@ -159,6 +159,85 @@ export const CONTACTS = staticRecords<Contact>('Contact', { deepFreeze: customDe
 export const CONTACTS = staticRecords<Contact>('Contact', { deepFreeze: false })
 ```
 
+### Creator and Locker Options
+The `creator` and `locker` options allow deeper control over object creation.
+
+```ts
+import { staticKey, staticRecords } from 'static-records'
+
+type Widget = {
+  id: string,
+  name: string
+}
+
+const WIDGETS = staticRecords<Widget>('Widget', {
+  // default implementation
+  creator: (id: string, recordType: string) => {
+    return {
+      id,
+      [staticKey]: recordType,
+    }
+  },
+  // default implementation
+  locker: (item, input) => {
+    Object.assign(item, input)
+  },
+})
+```
+
+#### Using Classes 
+Static Records can be class instances instead of generic objects.
+```ts
+import { staticRecords } from 'static-records'
+
+type SellerInput = {
+  firstName?: string,
+  lastName?: string,
+}
+
+export class Seller {
+  readonly [staticKey]: string
+  readonly id: string
+  readonly firstName: string
+  readonly lastName: string
+  
+  constructor(
+    id: string,
+    recordType: string,
+  ) {
+    this.id = id
+    this[staticKey] = recordType
+  }
+
+  fullName() {
+    return `${this.firstName} ${this.lastName}`
+  }
+}
+
+const SELLERS = staticRecords<Seller, SellerInput>(Seller.name, {
+  creator: (id, recordType) => new Thing(id, recordType),
+  locker: (item, input) => {
+    Object.assign(item, {
+      firstName: input.firstName ?? 'unknown',
+      lastName: input.lastName ?? 'unknown',
+    })
+  },
+})
+
+const SAM = SELLERS.define(
+  'SAM',
+  () => ({
+    firstName: 'Samuel',
+  }),
+)
+
+SELLERS.lock()
+
+SAM.firstName // 'Samuel'
+SAM.lastName // 'unknown'
+SAM.fullName() // 'Samuel unknown'
+```
+
 ## Building
 
 `$ pnpm install`

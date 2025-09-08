@@ -9,8 +9,11 @@ export type WithKey<T> = T & {
   [staticKey]: string
 }
 
-export type StaticRecords<Item extends IdItem> = {
-  define(id: string, factory: () => Omit<Item, 'id'>): WithKey<Item>,
+export type StaticRecords<
+  Item extends IdItem,
+  Input = Omit<Item, 'id'>
+> = {
+  define(id: string, factory: () => Input): WithKey<Item>,
   get(id: string): WithKey<Item>,
   has(id: string): boolean,
   lock(): void,
@@ -19,14 +22,20 @@ export type StaticRecords<Item extends IdItem> = {
   toObject(): Record<string, WithKey<Item>>,
 }
 
-export type Options = {
+export type Options<
+  Item extends IdItem,
+  Input = Omit<Item, 'id'>
+> = {
   deepFreeze?: false | (<T extends Record<string | symbol, any>>(obj: T) => T),
+  creator?: (id: string, recordType: string) => WithKey<Item>,
+  locker?: (item: WithKey<Item>, input: Input) => void,
 }
 
 export function staticRecords<
   Item extends IdItem,
->(recordType: string, opt?: Options): StaticRecords<Item> {
-  type Factory = () => Omit<Item, 'id'>
+  Input = Omit<Item, 'id'>,
+>(recordType: string, opt?: Options<Item, Input>): StaticRecords<Item, Input> {
+  type Factory = () => Input
   type ItemWithKey = WithKey<Item>
 
   const staticData: Record<string, ItemWithKey> = {}
@@ -34,15 +43,21 @@ export function staticRecords<
   const freezer = opt?.deepFreeze ?? deepFreeze
   let locked = false
 
+  const creator = opt?.creator ?? ((id, recordType) => {
+    return {
+      id,
+      [staticKey]: recordType,
+    } as ItemWithKey
+  })
+
+  const locker = opt?.locker ?? Object.assign
+
   return {
     define(id: string, factory: Factory): ItemWithKey {
       if (locked) {
         throw new Error(`Cannot define() after locking Static Records "${recordType}".`)
       }
-      const item = {
-        id,
-        [staticKey]: recordType,
-      } as ItemWithKey
+      const item = creator(id, recordType) as ItemWithKey
 
       staticData[id] = item
       definers.set(id, factory)
@@ -55,10 +70,8 @@ export function staticRecords<
       }
       Object.values(staticData).forEach(item => {
         const factory = definers.get(item.id) as Factory
-        Object.assign(
-          item,
-          factory(),
-        )
+        locker(item, factory())
+
         if (freezer) {
           freezer(item)
         }
