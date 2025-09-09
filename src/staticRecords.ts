@@ -9,7 +9,7 @@ export interface HasRecordKey {
   [recordTypeKey]: string
 }
 
-type WithKey<T> = T & HasRecordKey
+export type WithRecordType<T extends HasId> = T & HasRecordKey
 
 type ItemToInput<T> = Omit<T, 'id' | typeof recordTypeKey>
 
@@ -17,13 +17,13 @@ export type StaticRecords<
   Item extends HasId,
   Input = ItemToInput<Item>
 > = {
-  define(id: string, factory: () => Input): WithKey<Item>,
-  get(id: string): WithKey<Item>,
+  define(id: string, factory: () => Input): WithRecordType<Item>,
+  get(id: string): WithRecordType<Item>,
   has(id: string): boolean,
   lock(): void,
   locked(): boolean,
-  toArray(): WithKey<Item>[],
-  toObject(): Record<string, WithKey<Item>>,
+  toArray(): WithRecordType<Item>[],
+  toObject(): Record<string, WithRecordType<Item>>,
 }
 
 type Creator = (id: string, recordType: string) => HasId & HasRecordKey
@@ -34,7 +34,7 @@ export type Options<
 > = {
   deepFreeze?: false | (<T extends Record<string | symbol, any>>(obj: T) => T),
   creator?: Creator,
-  locker?: (item: WithKey<Item>, input: Input) => void,
+  locker?: (item: WithRecordType<Item>, input: Input) => void,
 }
 
 export function staticRecords<
@@ -42,7 +42,7 @@ export function staticRecords<
   Input = ItemToInput<Item>
 >(recordType: string, opt?: Options<Item, Input>): StaticRecords<Item, Input> {
   type Factory = () => Input
-  type ItemWithKey = WithKey<Item>
+  type ItemWithKey = WithRecordType<Item>
 
   const staticData: Record<string, ItemWithKey> = {}
   const definers: Map<string, Factory> = new Map()
