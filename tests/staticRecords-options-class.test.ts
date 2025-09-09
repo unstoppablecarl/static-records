@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import { getRecordType, recordTypeKey } from '../src/recordTypeKey'
-import { staticRecords } from '../src/staticRecords'
+import { type HasId, type HasRecordKey, staticRecords } from '../src/staticRecords'
 
 type ThingInput = {
   baseName: string
 }
 
-export class Thing {
+class BaseItem implements HasId, HasRecordKey {
   readonly [recordTypeKey]: string
 
   constructor(public readonly id: string,
@@ -14,7 +14,9 @@ export class Thing {
   ) {
     this[recordTypeKey] = recordType
   }
+}
 
+export class Thing extends BaseItem {
   readonly name: string = ''
 
   prefixName(prefix: string) {

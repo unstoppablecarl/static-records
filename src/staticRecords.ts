@@ -1,17 +1,21 @@
 import { deepFreeze } from './deepFreeze'
 import { recordTypeKey } from './recordTypeKey'
 
-export interface IdItem {
+export interface HasId {
   id: string,
 }
 
-export type WithKey<T> = T & {
+export interface HasRecordKey {
   [recordTypeKey]: string
 }
 
+type WithKey<T> = T & HasRecordKey
+
+type ItemToInput<T> = Omit<T, 'id' | typeof recordTypeKey>
+
 export type StaticRecords<
-  Item extends IdItem,
-  Input = Omit<Item, 'id'>
+  Item extends HasId,
+  Input = ItemToInput<Item>
 > = {
   define(id: string, factory: () => Input): WithKey<Item>,
   get(id: string): WithKey<Item>,
@@ -23,8 +27,8 @@ export type StaticRecords<
 }
 
 export type Options<
-  Item extends IdItem,
-  Input = Omit<Item, 'id'>
+  Item extends HasId,
+  Input = ItemToInput<Item>
 > = {
   deepFreeze?: false | (<T extends Record<string | symbol, any>>(obj: T) => T),
   creator?: (id: string, recordType: string) => WithKey<Item>,
@@ -32,8 +36,8 @@ export type Options<
 }
 
 export function staticRecords<
-  Item extends IdItem,
-  Input = Omit<Item, 'id'>,
+  Item extends HasId,
+  Input = ItemToInput<Item>
 >(recordType: string, opt?: Options<Item, Input>): StaticRecords<Item, Input> {
   type Factory = () => Input
   type ItemWithKey = WithKey<Item>
@@ -57,6 +61,11 @@ export function staticRecords<
       if (locked) {
         throw new Error(`Cannot define() after locking Static Records "${recordType}".`)
       }
+
+      if (staticData[id]) {
+        throw new Error(`A Static Record Type "${recordType}" with id "${id}" already exists.`)
+      }
+
       const item = creator(id, recordType) as ItemWithKey
 
       staticData[id] = item
@@ -66,7 +75,7 @@ export function staticRecords<
     },
     lock() {
       if (locked) {
-        throw new Error(`Cannot lock() when Static Records "${recordType}" are already locked.`)
+        throw new Error(`Cannot lock() when Static Record Type "${recordType}" is already locked.`)
       }
       Object.values(staticData).forEach(item => {
         const factory = definers.get(item.id) as Factory
@@ -85,7 +94,7 @@ export function staticRecords<
     get(id: string): ItemWithKey {
       const result = staticData[id]
       if (result === undefined) {
-        throw new Error(`Cannot find id "${id}" in Static Records "${recordType}"`)
+        throw new Error(`Cannot find a Static Record Type "${recordType}" with id "${id}".`)
       }
 
       return result

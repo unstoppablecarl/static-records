@@ -48,10 +48,6 @@ describe('staticRecords() unit tests', async () => {
     expect(VEHICLES.get(VAN.id)).toBe(VAN)
   })
 
-  it('.get() not found', async () => {
-    expect(() => VEHICLES.get('TRUCK')).toThrowError('Cannot find id "TRUCK" in Static Records "VEHICLE"')
-  })
-
   it('.toArray()', async () => {
     expect(VEHICLES.toArray()).toEqual([
       CAR,

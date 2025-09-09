@@ -1,2 +1,3 @@
+export * from './deepFreeze'
 export * from './staticRecords'
-export { isStaticRecord, getRecordType, recordTypeKey } from './recordTypeKey'
+export * from './recordTypeKey'
