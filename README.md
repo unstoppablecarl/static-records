@@ -169,7 +169,7 @@ export const PERFORMANCE = TIRES.define(
   }),
 )
 
-TIRES.locked()
+TIRES.lock()
 
 function makeTire(input: {
   name: string,
@@ -195,7 +195,7 @@ PERFORMANCE.brand // 'goodyear'
 
 ### Custom Deep Freeze
 You can use a custom `deepFreeze` function if needed or disable it.
-For very large objects you may need a non-recursive `deepFreeze` implementation or disabling `deepFreeze` completely.
+For very large objects you may need a non-recursive `deepFreeze` implementation or disabling `deepFreeze` completely and relying on typescript's readonly modifier.
 
 See the [default deepFreeze Implementation](src/deepFreeze.ts)
 
@@ -321,7 +321,7 @@ const SELLERS = staticRecords<Seller, SellerInput>(Seller.name, {
     item,
     // input is the object returned by the factory function passed to WIDGETS.define('MY_ID', () => input)
     // the type is determined by the second type argument passed to staticRecords()
-    input
+    input,
   ) => {
     // the following would throw an error as firstName is readonly
     // item.firstName = input.firstName ?? item.firstName
@@ -357,12 +357,15 @@ SAM.fullName // 'Samuel unknown'
 ## Building
 
 `$ pnpm install`
+
 `$ pnpm run build`
+
 `$ pnpm run readme` Injects README.md code examples
 
 ## Testing
 
 `$ pnpm run test`
+
 `$ pnpm run test:mutation`
 
 ## Releases Automation
