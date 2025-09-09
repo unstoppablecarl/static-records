@@ -7,16 +7,16 @@ import { TESTS as defaultValues } from '../readme/code/default-values'
 import type { TestCase } from '../readme/types'
 
 describe('readme tests', async () => {
-  describe('use-example.ts', async (ctx) => {
+  describe('use-example.ts', async () => {
     runTests(useExampleTests)
   })
-  describe('contacts.ts', async (ctx) => {
+  describe('contacts.ts', async () => {
     runTests(contactsTests)
   })
-  describe('using-classes.ts', async (ctx) => {
+  describe('using-classes.ts', async () => {
     runTests(usingClasses)
   })
-  describe('default-values.ts', async (ctx) => {
+  describe('default-values.ts', async () => {
     runTests(defaultValues)
   })
 })
@@ -24,7 +24,7 @@ describe('readme tests', async () => {
 function runTests(tests: TestCase[]) {
   test.each(tests)(
     'expected: $expected, actual: $actual',
-    ({ expected, actual, exact }
+    ({ expected, actual, exact },
     ) => {
       exact = exact ?? true
       if (exact && expected !== actual) {

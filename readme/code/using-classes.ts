@@ -38,7 +38,7 @@ const SELLERS = staticRecords<Seller, SellerInput>(Seller.name, {
     // create the initial object instance
     return new Seller(id, recordType)
   },
-  locker: (
+  filler: (
     // object returned by creator function
     item,
     // input is the object returned by the factory function passed to WIDGETS.define('MY_ID', () => input)

@@ -26,7 +26,7 @@ export class Thing extends BaseItem {
 
 const THINGS = staticRecords<Thing, ThingInput>(Thing.name, {
   creator: (id, recordType) => new Thing(id, recordType),
-  locker: (item, input) => {
+  filler: (item, input) => {
     Object.assign(item, {
       name: input.baseName,
     })

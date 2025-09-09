@@ -217,9 +217,9 @@ export const VEHICLES = staticRecords<Contact>('Vehicle', { deepFreeze: false })
 ```
 
 ### Creator and Locker Options
-The `creator` and `locker` options allow deeper control over object creation.
+The `creator` and `filler` options allow deeper control over object creation.
 
-<!-- doc-gen CODE src="./readme/code/creator-and-locker-options.ts" -->
+<!-- doc-gen CODE src="./readme/code/creator-and-filler-options.ts" -->
 ```ts
 import { recordTypeKey, staticRecords } from 'static-records'
 
@@ -244,7 +244,7 @@ const WIDGETS = staticRecords<Widget>('Widget', {
   },
   // populates existing item with data before it is locked
   // default implementation shown
-  locker: (
+  filler: (
     // item is the object returned by the creator function
     item: ProtoWidget,
     // input is the object returned by the factory function passed to WIDGETS.define('MY_ID', () => input)
@@ -316,7 +316,7 @@ const SELLERS = staticRecords<Seller, SellerInput>(Seller.name, {
     // create the initial object instance
     return new Seller(id, recordType)
   },
-  locker: (
+  filler: (
     // object returned by creator function
     item,
     // input is the object returned by the factory function passed to WIDGETS.define('MY_ID', () => input)

@@ -34,7 +34,7 @@ export type Options<
 > = {
   deepFreeze?: false | (<T extends Record<string | symbol, any>>(obj: T) => T),
   creator?: Creator,
-  locker?: (item: WithRecordType<Item>, input: Input) => void,
+  filler?: (item: WithRecordType<Item>, input: Input) => void,
 }
 
 export function staticRecords<
@@ -56,7 +56,7 @@ export function staticRecords<
     }
   })
 
-  const locker = opt?.locker ?? Object.assign
+  const filler = opt?.filler ?? Object.assign
 
   return {
     define(id: string, factory: Factory): ItemWithKey {
@@ -81,7 +81,7 @@ export function staticRecords<
       }
       Object.values(staticData).forEach(item => {
         const factory = definers.get(item.id) as Factory
-        locker(item, factory())
+        filler(item, factory())
 
         if (freezer) {
           freezer(item)

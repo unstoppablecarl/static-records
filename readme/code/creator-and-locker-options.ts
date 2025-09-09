@@ -21,7 +21,7 @@ const WIDGETS = staticRecords<Widget>('Widget', {
   },
   // populates existing item with data before it is locked
   // default implementation shown
-  locker: (
+  filler: (
     // item is the object returned by the creator function
     item: ProtoWidget,
     // input is the object returned by the factory function passed to WIDGETS.define('MY_ID', () => input)
