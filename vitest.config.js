@@ -12,7 +12,10 @@ export default defineConfig({
     typecheck: {
       enabled: true,
       tsconfig: 'tsconfig.json',
-      include: ['tests/**/*.test.ts'],
+      include: [
+        'tests/**/*.test.ts',
+        'readme/**/*.ts',
+      ],
     },
     mockReset: true,
     coverage: {

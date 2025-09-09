@@ -12,6 +12,7 @@
     "noEmit": true
   },
   "include": [
+    "readme/**/*",
     "src/**/*",
     "tests/**/*",
     "rollup.config.mjs"

@@ -6,14 +6,15 @@ A tiny package for static immutable js data.
  - Circular references
  - Out of order definitions
 
+Useful for: configuration data, reference data, game data, or any scenario where you need immutable, interconnected objects defined at runtime.
 ## Installation
 
 `$ npm i static-records`
 
 ## Example
 
+<!-- doc-gen CODE src="./readme/code/person-data.ts" showFileName=true -->
 `person-data.ts`
-
 ```ts
 import { staticRecords } from 'static-records'
 
@@ -24,22 +25,22 @@ export type Person = {
   emergency_contact: Person | null;
 }
 
-type PersonNoId = Omit<Person, 'id'>
-
 export const PEOPLE = staticRecords<Person>(/* Record Type Name: */ 'Person')
 
 export const JIM = PEOPLE.define(
   'JIM', // id property
-  (): PersonNoId => ({
-    name: 'Jim',
-    manager: SUE,
-    emergency_contact: null,
-  }),
+  () => {
+    return {
+      name: 'Jim',
+      manager: SUE,
+      emergency_contact: null,
+    }
+  },
 )
 
 export const SUE = PEOPLE.define(
   'SUE', // id property
-  (): PersonNoId => ({
+  () => ({
     name: 'Sue',
     manager: null,
     emergency_contact: JIM,
@@ -48,34 +49,35 @@ export const SUE = PEOPLE.define(
 // locks the data with deep Object.freeze()
 PEOPLE.lock()
 ```
+<!-- end-doc-gen -->
 
+<!-- doc-gen CODE src="./readme/code/vehicle-data.ts" showFileName=true -->
 `vehicle-data.ts`
-
 ```ts
 import { staticRecords } from 'static-records'
 
-import { JIM, SUE } from './person-data'
+import { JIM, type Person, SUE } from './person-data'
 
 export type Vehicle = {
   id: string,
   name: string,
   driver: Person,
-  passengers: Person[],
+  passengers?: Person[],
 }
-type VehicleNoId = Omit<Vehicle, 'id'>
 
 export const VEHICLES = staticRecords<Vehicle>(/* Record Type Name: */ 'Vehicle')
 
 export const CAR = VEHICLES.define(
   'CAR',
-  (): VehicleNoId => ({
+  () => ({
     name: 'Car',
     driver: SUE,
+    passengers: [],
   }),
 )
 export const VAN = VEHICLES.define(
   'VAN',
-  (): VehicleNoId => ({
+  () => ({
     name: 'Van',
     driver: JIM,
     passengers: [SUE],
@@ -84,9 +86,10 @@ export const VAN = VEHICLES.define(
 
 VEHICLES.lock()
 ```
+<!-- end-doc-gen -->
 
+<!-- doc-gen CODE src="./readme/code/use-example.ts" test=true showFileName=true -->
 `use-example.ts`
-
 ```ts
 import { JIM } from './person-data'
 import { CAR } from './vehicle-data'
@@ -94,30 +97,31 @@ import { getRecordType } from 'static-records'
 
 JIM.id // 'JIM'
 JIM.name // 'Jim'
-JIM.manager // SUE
+JIM.manager?.id // 'SUE'
 JIM.emergency_contact // null
-
 getRecordType(JIM) // 'Person'
-
 CAR.id // 'CAR'
 CAR.name // 'Car'
-CAR.driver // SUE,
-CAR.passengers // []
+CAR.driver.id // 'SUE'
 ```
+<!-- end-doc-gen -->
 
-## API
+## API Reference
 
+<!-- doc-gen CODE src="./readme/code/contacts.ts" test=true -->
 ```ts
 import { staticRecords } from 'static-records'
 
 type Contact = {
+  id: string,
   name: string;
 };
+
 export const CONTACTS = staticRecords<Contact>('Contact')
 
 export const JIM = CONTACTS.define(
   'JIM',
-  (): VehicleNoId => ({
+  () => ({
     name: 'Car',
   }),
 )
@@ -133,94 +137,206 @@ CONTACTS.has('JIM') // true
 CONTACTS.toArray() // [JIM]
 CONTACTS.toObject() // {"JIM": JIM}
 ```
+<!-- end-doc-gen -->
+
+## Default Values and Object Composition
+Using a factory like `makeTire()` below allows for default values and easy object composition.
+
+<!-- doc-gen CODE src="./readme/code/default-values.ts" test=true -->
+```ts
+import { staticRecords } from 'static-records'
+
+type Tire = {
+  id: string,
+  name: string;
+  brand: string,
+};
+
+export const TIRES = staticRecords<Tire>('Tire')
+
+export const ECONOMY = TIRES.define(
+  'ECONOMY',
+  () => makeTire({
+    name: 'Economy',
+  }),
+)
+
+export const PERFORMANCE = TIRES.define(
+  'PERFORMANCE',
+  () => makeTire({
+    name: 'Performance',
+    brand: 'goodyear',
+  }),
+)
+
+TIRES.locked()
+
+function makeTire(input: {
+  name: string,
+  brand?: string,
+}): Omit<Tire, 'id'> {
+  return {
+    brand: 'generic',
+    ...input,
+  }
+}
+
+ECONOMY.id // 'ECONOMY'
+ECONOMY.name // 'Economy'
+ECONOMY.brand // 'generic'
+PERFORMANCE.id // 'PERFORMANCE'
+PERFORMANCE.name // 'Performance'
+PERFORMANCE.brand // 'goodyear'
+```
+<!-- end-doc-gen -->
 
 ## Freezing
 `Object.freeze()` is applied to all records and their children after `lock()` is called.
 
 ### Custom Deep Freeze
-You can use a custom `deepFreeze` function if needed.
+You can use a custom `deepFreeze` function if needed or disable it.
+For very large objects you may need a non-recursive `deepFreeze` implementation or disabling `deepFreeze` completely.
 
 See the [default deepFreeze Implementation](src/deepFreeze.ts)
 
 ```ts
-
-// default implementation
 function myCustomDeepFreeze(obj) {
-  // ...
+  Object.freeze(obj)
+
+  Object.freeze(obj.childObjects).forEach(item => {
+    Object.freeze(item)
+  })
+
   return obj
 }
 
 export const CONTACTS = staticRecords<Contact>('Contact', { deepFreeze: customDeepFreeze })
-```
-
-### Disable Deep Freeze
-
-```ts
-export const CONTACTS = staticRecords<Contact>('Contact', { deepFreeze: false })
+ 
+// disabled
+export const VEHICLES = staticRecords<Contact>('Vehicle', { deepFreeze: false })
 ```
 
 ### Creator and Locker Options
 The `creator` and `locker` options allow deeper control over object creation.
 
+<!-- doc-gen CODE src="./readme/code/creator-and-locker-options.ts" -->
 ```ts
-import { staticRecords, recordTypeKey } from 'static-records'
+import { recordTypeKey, staticRecords } from 'static-records'
 
 type Widget = {
-  id: string,
-  name: string
+  readonly id: string,
+  readonly name: string
+}
+
+type ProtoWidget = {
+  readonly id: string,
+  readonly [recordTypeKey]: string
 }
 
 const WIDGETS = staticRecords<Widget>('Widget', {
-  // default implementation
-  creator: (id: string, recordType: string) => {
+  // creates initial object with id and recordType
+  // default implementation shown
+  creator: (id: string, recordType: string): ProtoWidget => {
     return {
       id,
       [recordTypeKey]: recordType,
     }
   },
-  // default implementation
-  locker: (item, input) => {
+  // populates existing item with data before it is locked
+  // default implementation shown
+  locker: (
+    // item is the object returned by the creator function
+    item: ProtoWidget,
+    // input is the object returned by the factory function passed to WIDGETS.define('MY_ID', () => input)
+    // the type is determined by the second type argument passed to staticRecords()
+    // the default input type is shown here
+    input: Omit<Widget, 'id' | typeof recordTypeKey>,
+  ) => {
+    // typescript doesn't check readonly when using Object.assign()
+    // inside this function the object is still being created
+    // so readonly should not be checked yet
     Object.assign(item, input)
+
+    // this function must mutate the item object (not create a new one)
+    // for object references to work correctly
   },
 })
+
+const BOOP = WIDGETS.define(
+  'BOOP',
+  () => ({
+    name: 'Boop',
+  }),
+)
+
+WIDGETS.lock()
 ```
+<!-- end-doc-gen -->
 
 #### Using Classes 
 Static Records can be class instances instead of generic objects.
+<!-- doc-gen CODE src="./readme/code/using-classes.ts" test=true -->
 ```ts
-import { staticRecords, recordTypeKey } from 'static-records'
+import { type HasId, type HasRecordKey, recordTypeKey, staticRecords } from 'static-records'
 
+// the interfaces HasRecordKey and HasId are not strictly required here
+// but BaseItem will need to match their interfaces
+class BaseItem implements HasRecordKey, HasId {
+  readonly [recordTypeKey]: string
+
+  constructor(
+    public readonly id: string,
+    recordType: string,
+  ) {
+    this[recordTypeKey] = recordType
+  }
+}
+
+// it is not required for Seller to extend BaseItem
+// Seller could contain the code from BaseItem instead
+export class Seller extends BaseItem {
+  declare readonly id: string
+  readonly firstName: string = 'unknown'
+  readonly lastName: string = 'unknown'
+
+  get fullName() {
+    return `${this.firstName} ${this.lastName}`
+  }
+}
+
+// if no input type argument is provided
+// then WidgetInput defaults to Omit<Item, 'id' | typeof recordTypeKey>
 type SellerInput = {
   firstName?: string,
   lastName?: string,
 }
 
-export class Seller {
-  readonly [recordTypeKey]: string
-  readonly id: string
-  readonly firstName: string
-  readonly lastName: string
-  
-  constructor(
-    id: string,
-    recordType: string,
-  ) {
-    this.id = id
-    this[recordTypeKey] = recordType
-  }
-
-  fullName() {
-    return `${this.firstName} ${this.lastName}`
-  }
-}
-
 const SELLERS = staticRecords<Seller, SellerInput>(Seller.name, {
-  creator: (id, recordType) => new Thing(id, recordType),
-  locker: (item, input) => {
-    Object.assign(item, {
-      firstName: input.firstName ?? 'unknown',
-      lastName: input.lastName ?? 'unknown',
-    })
+  creator: (id: string, recordType: string) => {
+    // create the initial object instance
+    return new Seller(id, recordType)
+  },
+  locker: (
+    // object returned by creator function
+    item,
+    // input is the object returned by the factory function passed to WIDGETS.define('MY_ID', () => input)
+    // the type is determined by the second type argument passed to staticRecords()
+    input
+  ) => {
+    // the following would throw an error as firstName is readonly
+    // item.firstName = input.firstName ?? item.firstName
+
+    // inside this function the object is still being created
+    // so readonly should not be checked yet
+
+    // typescript doesn't check readonly when using Object.assign()
+    // but you can ensure the type safety of the source object manually
+    const source: Pick<Seller, 'firstName' | 'lastName'> = {
+      firstName: input.firstName ?? item.firstName,
+      lastName: input.lastName ?? item.lastName,
+    }
+
+    Object.assign(item, source)
   },
 })
 
@@ -232,16 +348,17 @@ const SAM = SELLERS.define(
 )
 
 SELLERS.lock()
-
 SAM.firstName // 'Samuel'
 SAM.lastName // 'unknown'
-SAM.fullName() // 'Samuel unknown'
+SAM.fullName // 'Samuel unknown'
 ```
+<!-- end-doc-gen -->
 
 ## Building
 
 `$ pnpm install`
 `$ pnpm run build`
+`$ pnpm run readme` Injects README.md code examples
 
 ## Testing
 
