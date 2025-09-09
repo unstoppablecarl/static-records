@@ -26,12 +26,14 @@ export type StaticRecords<
   toObject(): Record<string, WithKey<Item>>,
 }
 
+type Creator = (id: string, recordType: string) => HasId & HasRecordKey
+
 export type Options<
   Item extends HasId,
   Input = ItemToInput<Item>
 > = {
   deepFreeze?: false | (<T extends Record<string | symbol, any>>(obj: T) => T),
-  creator?: (id: string, recordType: string) => WithKey<Item>,
+  creator?: Creator,
   locker?: (item: WithKey<Item>, input: Input) => void,
 }
 
@@ -47,11 +49,11 @@ export function staticRecords<
   const freezer = opt?.deepFreeze ?? deepFreeze
   let locked = false
 
-  const creator = opt?.creator ?? ((id, recordType) => {
+  const creator: Creator = opt?.creator ?? ((id, recordType) => {
     return {
       id,
       [recordTypeKey]: recordType,
-    } as ItemWithKey
+    }
   })
 
   const locker = opt?.locker ?? Object.assign
