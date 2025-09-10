@@ -17,7 +17,7 @@ export type StaticRecords<
   Item extends HasId,
   Input = ItemToInput<Item>
 > = {
-  define(id: string, factory: () => Input): WithRecordType<Item>,
+  define(id: string, factory: (item: Item) => Input): WithRecordType<Item>,
   get(id: string): WithRecordType<Item>,
   has(id: string): boolean,
   lock(): void,
@@ -41,8 +41,8 @@ export function staticRecords<
   Item extends HasId,
   Input = ItemToInput<Item>
 >(recordType: string, opt?: Options<Item, Input>): StaticRecords<Item, Input> {
-  type Factory = () => Input
   type ItemWithKey = WithRecordType<Item>
+  type Factory = (item: ItemWithKey) => Input
 
   const staticData: Record<string, ItemWithKey> = {}
   const definers: Map<string, Factory> = new Map()
@@ -81,7 +81,7 @@ export function staticRecords<
       }
       Object.values(staticData).forEach(item => {
         const factory = definers.get(item.id) as Factory
-        filler(item, factory())
+        filler(item, factory(item))
 
         if (freezer) {
           freezer(item)

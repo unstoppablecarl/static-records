@@ -32,6 +32,7 @@ const WIDGETS = staticRecords<Widget>('Widget', {
     // typescript doesn't check readonly when using Object.assign()
     // inside this function the object is still being created
     // so readonly should not be checked yet
+    // type safety is maintained by the Widget type anyway
     Object.assign(item, input)
 
     // this function must mutate the item object (not create a new one)

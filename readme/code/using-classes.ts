@@ -26,51 +26,75 @@ export class Seller extends BaseItem {
   }
 }
 
-// if no input type argument is provided
-// then WidgetInput defaults to Omit<Item, 'id' | typeof recordTypeKey>
-type SellerInput = {
-  firstName?: string,
-  lastName?: string,
-}
+type SellerInput = Pick<Seller, 'firstName' | 'lastName'>
 
 const SELLERS = staticRecords<Seller, SellerInput>(Seller.name, {
   creator: (id: string, recordType: string) => {
     // create the initial object instance
     return new Seller(id, recordType)
   },
-  filler: (
-    // object returned by creator function
-    item,
-    // input is the object returned by the factory function passed to WIDGETS.define('MY_ID', () => input)
-    // the type is determined by the second type argument passed to staticRecords()
-    input,
-  ) => {
-    // the following would throw an error as firstName is readonly
-    // item.firstName = input.firstName ?? item.firstName
-
-    // inside this function the object is still being created
-    // so readonly should not be checked yet
-
-    // typescript doesn't check readonly when using Object.assign()
-    // but you can ensure the type safety of the source object manually
-    const source: Pick<Seller, 'firstName' | 'lastName'> = {
-      firstName: input.firstName ?? item.firstName,
-      lastName: input.lastName ?? item.lastName,
-    }
-
-    Object.assign(item, source)
-  },
 })
+
+const SUE = SELLERS.define(
+  'SUE',
+  // item is the object returned by the creator function
+  (item) => makeSeller(item, {
+    firstName: 'Susan',
+    lastName: 'Smith',
+  }),
+)
 
 const SAM = SELLERS.define(
   'SAM',
-  () => ({
+  sellerFactory({
     firstName: 'Samuel',
   }),
 )
 
 SELLERS.lock()
+
+function makeSeller(item: Seller, input: {
+  firstName?: string,
+  lastName?: string,
+}): SellerInput {
+  const {
+    firstName,
+    lastName
+  } = item
+
+  return {
+    // default values from class
+    firstName,
+    lastName,
+    // replace defaults
+    ...input,
+  }
+}
+
+// optionally make a factory for a cleaner api
+function sellerFactory(input: {
+  firstName?: string,
+  lastName?: string,
+}) {
+  return (item: Seller): SellerInput => makeSeller(item, input)
+}
+
 export const TESTS: TestCase[] = [
+  {
+    key: 'SUE.firstName',
+    actual: SUE.firstName,
+    expected: 'Susan',
+  },
+  {
+    key: 'SUE.lastName',
+    actual: SUE.lastName,
+    expected: 'Smith',
+  },
+  {
+    key: 'SUE.fullName',
+    actual: SUE.fullName,
+    expected: 'Susan Smith',
+  },
   {
     key: 'SAM.firstName',
     actual: SAM.firstName,
@@ -85,5 +109,10 @@ export const TESTS: TestCase[] = [
     key: 'SAM.fullName',
     actual: SAM.fullName,
     expected: 'Samuel unknown',
+  },
+  {
+    key: 'SAM instanceof Seller',
+    actual: SAM instanceof Seller,
+    expected: true,
   },
 ]
