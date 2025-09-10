@@ -194,13 +194,14 @@ PERFORMANCE.brand // 'goodyear'
 `Object.freeze()` is applied to all records and their children after `lock()` is called.
 
 ### Custom Deep Freeze
-You can use a custom `deepFreeze` function if needed or disable it.
-For very large objects you may need a non-recursive `deepFreeze` implementation or disabling `deepFreeze` completely and relying on typescript's readonly modifier.
+You can use a custom `freezer` function if needed or disable it.
+For very large objects you may need to use a non-recursive `freezer` implementation. 
+You can also disable `freezer` and rely on typescript's readonly modifier.
 
 See the [default deepFreeze Implementation](src/deepFreeze.ts)
 
 ```ts
-function myCustomDeepFreeze(obj) {
+function myFreezer(obj) {
   Object.freeze(obj)
 
   Object.freeze(obj.childObjects).forEach(item => {
@@ -210,10 +211,10 @@ function myCustomDeepFreeze(obj) {
   return obj
 }
 
-export const CONTACTS = staticRecords<Contact>('Contact', { deepFreeze: customDeepFreeze })
+export const CONTACTS = staticRecords<Contact>('Contact', { freezer: myFreezer })
  
 // disabled
-export const VEHICLES = staticRecords<Contact>('Vehicle', { deepFreeze: false })
+export const VEHICLES = staticRecords<Contact>('Vehicle', { freezer: false })
 ```
 
 ### Creator and Locker Options

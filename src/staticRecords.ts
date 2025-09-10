@@ -11,7 +11,7 @@ export interface HasRecordKey {
 
 export type WithRecordType<T extends HasId> = T & HasRecordKey
 
-type ItemToInput<T> = Omit<T, 'id' | typeof recordTypeKey>
+export type ItemToInput<T> = Omit<T, 'id' | typeof recordTypeKey>
 
 export type StaticRecords<
   Item extends HasId,
@@ -26,37 +26,42 @@ export type StaticRecords<
   toObject(): Record<string, WithRecordType<Item>>,
 }
 
-type Creator = (id: string, recordType: string) => HasId & HasRecordKey
+export type Creator = (id: string, recordType: string) => HasId & HasRecordKey
+export type Freezer = false | (<T extends Record<string | symbol, any>>(obj: T) => T)
+
+export type Filler<
+  Item extends HasId,
+  Input = ItemToInput<Item>
+> = (item: WithRecordType<Item>, input: Input) => void
 
 export type Options<
   Item extends HasId,
   Input = ItemToInput<Item>
 > = {
-  deepFreeze?: false | (<T extends Record<string | symbol, any>>(obj: T) => T),
+  freezer?: Freezer,
   creator?: Creator,
-  filler?: (item: WithRecordType<Item>, input: Input) => void,
+  filler?: Filler<Item, Input>
 }
 
 export function staticRecords<
   Item extends HasId,
   Input = ItemToInput<Item>
->(recordType: string, opt?: Options<Item, Input>): StaticRecords<Item, Input> {
+>(recordType: string, options?: Options<Item, Input>): StaticRecords<Item, Input> {
   type ItemWithKey = WithRecordType<Item>
   type Factory = (item: ItemWithKey) => Input
 
   const staticData: Record<string, ItemWithKey> = {}
   const definers: Map<string, Factory> = new Map()
-  const freezer = opt?.deepFreeze ?? deepFreeze
   let locked = false
 
-  const creator: Creator = opt?.creator ?? ((id, recordType) => {
+  const freezer = options?.freezer ?? deepFreeze
+  const creator: Creator = options?.creator ?? ((id, recordType) => {
     return {
       id,
       [recordTypeKey]: recordType,
     }
   })
-
-  const filler = opt?.filler ?? Object.assign
+  const filler = options?.filler ?? Object.assign
 
   return {
     define(id: string, factory: Factory): ItemWithKey {

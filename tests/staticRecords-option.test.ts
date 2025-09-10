@@ -8,9 +8,9 @@ type Vehicle = {
 }
 
 describe('staticRecords() option tests', async () => {
-  it('options.deepFreeze = custom', async () => {
+  it('options.freezer = custom', async () => {
     const VEHICLES = staticRecords<Vehicle>('VEHICLE', {
-      deepFreeze: (record) => {
+      freezer: (record) => {
         // @ts-expect-error
         record.tested = true
         return record
@@ -41,9 +41,9 @@ describe('staticRecords() option tests', async () => {
     })
   })
 
-  it('options.deepFreeze = false', async () => {
+  it('options.freezer = false', async () => {
     const VEHICLES = staticRecords<Vehicle>('VEHICLE', {
-      deepFreeze: false,
+      freezer: false,
     })
 
     const CAR = VEHICLES.define(
