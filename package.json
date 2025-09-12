@@ -1,8 +1,8 @@
 {
   "name": "static-records",
   "type": "module",
-  "version": "1.3.0",
-  "packageManager": "pnpm@10.14.0",
+  "version": "1.4.0",
+  "packageManager": "pnpm@10.15.1",
   "description": "Static immutable relational data for js",
   "author": {
     "name": "Carl Olsen",
@@ -55,7 +55,7 @@
     "esbuild": "^0.25.9",
     "markdown-magic": "^3.7.0",
     "pascalcase": "^2.0.0",
-    "rollup": "^4.50.0",
+    "rollup": "^4.50.1",
     "rollup-plugin-delete": "^3.0.1",
     "rollup-plugin-dts": "^6.2.3",
     "rollup-plugin-esbuild": "^6.2.1",

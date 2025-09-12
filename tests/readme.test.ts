@@ -1,8 +1,9 @@
 import { describe, expect, test } from 'vitest'
 import { TESTS as useExampleTests } from '../readme/code/use-example'
 import { TESTS as contactsTests } from '../readme/code/contacts'
-import { TESTS as usingClasses } from '../readme/code/using-classes'
+import { TESTS as usingClassesTests } from '../readme/code/using-classes'
 import { TESTS as defaultValues } from '../readme/code/default-values'
+import { TESTS as factoryContactTests } from '../readme/code/static-records-factory-contacts'
 
 import type { TestCase } from '../readme/types'
 
@@ -14,10 +15,13 @@ describe('readme tests', async () => {
     runTests(contactsTests)
   })
   describe('using-classes.ts', async () => {
-    runTests(usingClasses)
+    runTests(usingClassesTests)
   })
   describe('default-values.ts', async () => {
     runTests(defaultValues)
+  })
+  describe('static-records-factory-contacts.ts', async () => {
+    runTests(factoryContactTests)
   })
 })
 

@@ -28,7 +28,7 @@ export class Seller extends BaseItem {
 
 type SellerInput = Pick<Seller, 'firstName' | 'lastName'>
 
-const SELLERS = staticRecords<Seller, SellerInput>(Seller.name, {
+const SELLERS = staticRecords<Seller, Seller, SellerInput>(Seller.name, {
   creator: (id: string, recordType: string) => {
     // create the initial object instance
     return new Seller(id, recordType)

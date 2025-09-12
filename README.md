@@ -3,10 +3,13 @@
 A tiny package for static immutable js data.
 
 **Supports**
- - Circular references
- - Out of order definitions
 
-Useful for: configuration data, reference data, game data, or any scenario where you need immutable, interconnected objects defined at runtime.
+- Circular references
+- Out of order definitions
+
+Useful for: configuration data, reference data, game data, or any scenario where you need immutable, interconnected
+objects defined at runtime.
+
 ## Installation
 
 `$ npm i static-records`
@@ -190,15 +193,17 @@ PERFORMANCE.brand // 'goodyear'
 ```
 <!-- end-doc-gen -->
 
-## Freezing
+## Freezer Options
+
 `Object.freeze()` is applied to all records and their children after `lock()` is called.
 
 ### Custom Deep Freeze
+
 You can use a custom `freezer` function if needed or disable it.
-For very large objects you may need to use a non-recursive `freezer` implementation. 
+For very large objects you may need to use a non-recursive `freezer` implementation.
 You can also disable `freezer` and rely on typescript's readonly modifier.
 
-See the [default deepFreeze Implementation](src/deepFreeze.ts)
+See the [default freezer](src/deepFreeze.ts)
 
 ```ts
 function myFreezer(obj) {
@@ -212,7 +217,7 @@ function myFreezer(obj) {
 }
 
 export const CONTACTS = staticRecords<Contact>('Contact', { freezer: myFreezer })
- 
+
 // disabled
 export const VEHICLES = staticRecords<Contact>('Vehicle', { freezer: false })
 ```
@@ -240,6 +245,10 @@ const WIDGETS = staticRecords<Widget>('Widget', {
   creator: (id: string, recordType: string): ProtoWidget => {
     return {
       id,
+      // the recordTypeKey symbol is used by the
+      // getRecordType() function
+      // and the deepFreeze() function to determine
+      // which objects are static records
       [recordTypeKey]: recordType,
     }
   },
@@ -275,7 +284,7 @@ WIDGETS.lock()
 ```
 <!-- end-doc-gen -->
 
-#### Using Classes 
+#### Using Classes
 Static Records can be class instances instead of generic objects.
 <!-- doc-gen CODE src="./readme/code/using-classes.ts" test=true -->
 ```ts
@@ -308,7 +317,7 @@ export class Seller extends BaseItem {
 
 type SellerInput = Pick<Seller, 'firstName' | 'lastName'>
 
-const SELLERS = staticRecords<Seller, SellerInput>(Seller.name, {
+const SELLERS = staticRecords<Seller, Seller, SellerInput>(Seller.name, {
   creator: (id: string, recordType: string) => {
     // create the initial object instance
     return new Seller(id, recordType)
@@ -366,6 +375,35 @@ SAM.firstName // 'Samuel'
 SAM.lastName // 'unknown'
 SAM.fullName // 'Samuel unknown'
 SAM instanceof Seller // true
+```
+<!-- end-doc-gen -->
+
+### Factories and Default Options
+
+A static records factory can be created to set reusable default options.
+<!-- doc-gen CODE src="./readme/code/static-records-factory.ts" -->
+```ts
+import { type DefaultProtoItem, recordTypeKey, staticRecordsFactory } from 'static-records'
+
+export type BaseItem = {
+  id: string,
+}
+
+type BaseProtoItem = BaseItem & DefaultProtoItem & {
+  uid: string,
+}
+
+export const makeStaticRecords = staticRecordsFactory<BaseItem, BaseProtoItem>({
+  creator(id, recordType) {
+    return {
+      // adding unique id
+      uid: `${recordType}-${id}`,
+      id,
+      [recordTypeKey]: recordType,
+    }
+  },
+  freezer: false,
+})
 ```
 <!-- end-doc-gen -->
 

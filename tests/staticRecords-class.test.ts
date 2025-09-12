@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { getRecordType, recordTypeKey } from '../src/recordTypeKey'
-import { type HasId, type HasRecordKey, staticRecords } from '../src/staticRecords'
+import { getRecordType, type HasId, type HasRecordKey, recordTypeKey } from '../src/recordTypeKey'
+import { staticRecords } from '../src/staticRecords'
 
 type ThingInput = {
   baseName: string
@@ -24,7 +24,7 @@ export class Thing extends BaseItem {
   }
 }
 
-const THINGS = staticRecords<Thing, ThingInput>(Thing.name, {
+const THINGS = staticRecords<Thing, Thing, ThingInput>(Thing.name, {
   creator: (id, recordType) => new Thing(id, recordType),
   filler: (item, input) => {
     Object.assign(item, {

@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { staticRecords } from '../src'
+import { recordTypeKey, staticRecords } from '../src'
+import { defineAndLockVehicles } from './helpers/vehicles'
 
 type Vehicle = {
   id: string,
   name: string,
-  tested?: boolean
+  tested?: string
 }
 
 describe('staticRecords() option tests', async () => {
@@ -12,59 +13,57 @@ describe('staticRecords() option tests', async () => {
     const VEHICLES = staticRecords<Vehicle>('VEHICLE', {
       freezer: (record) => {
         // @ts-expect-error
-        record.tested = true
+        record.tested = 'freezer'
         return record
       },
     })
 
-    const CAR = VEHICLES.define(
-      'CAR',
-      () => ({
-        name: 'Car',
-      }),
-    )
-    const VAN = VEHICLES.define(
-      'VAN',
-      () => ({
-        name: 'Van',
-      }),
-    )
+    const { CAR, VAN } = defineAndLockVehicles(VEHICLES)
 
-    VEHICLES.lock()
-
-    expect(CAR.tested).toBe(true)
+    expect(CAR.tested).toBe('freezer')
+    expect(VAN.tested).toBe('freezer')
     expect(Object.isFrozen(CAR)).toBe(false)
     expect(Object.isFrozen(VAN)).toBe(false)
-
-    Object.values(VEHICLES.toObject()).forEach(item => {
-      expect(Object.isFrozen(item)).toBe(false)
-    })
   })
 
   it('options.freezer = false', async () => {
     const VEHICLES = staticRecords<Vehicle>('VEHICLE', {
       freezer: false,
     })
+    const { CAR, VAN } = defineAndLockVehicles(VEHICLES)
 
-    const CAR = VEHICLES.define(
-      'CAR',
-      () => ({
-        name: 'Car',
-      }),
-    )
-    const VAN = VEHICLES.define(
-      'VAN',
-      () => ({
-        name: 'Van',
-      }),
-    )
-
-    VEHICLES.lock()
     expect(Object.isFrozen(CAR)).toBe(false)
     expect(Object.isFrozen(VAN)).toBe(false)
+  })
 
-    Object.values(VEHICLES.toObject()).forEach(item => {
-      expect(Object.isFrozen(item)).toBe(false)
+  it('options.filler = custom', async () => {
+    const VEHICLES = staticRecords<Vehicle>('VEHICLE', {
+      filler: (item, input) => {
+        Object.assign(item, {
+          ...input,
+          tested: 'filler',
+        })
+      },
     })
+    const { CAR, VAN } = defineAndLockVehicles(VEHICLES)
+
+    expect(CAR.tested).toBe('filler')
+    expect(VAN.tested).toBe('filler')
+  })
+
+  it('options.creator = custom', async () => {
+    const VEHICLES = staticRecords<Vehicle>('VEHICLE', {
+      creator: (id, recordType) => {
+        return {
+          id,
+          [recordTypeKey]: recordType,
+          tested: 'creator',
+        }
+      },
+    })
+    const { CAR, VAN } = defineAndLockVehicles(VEHICLES)
+
+    expect(CAR.tested).toBe('creator')
+    expect(VAN.tested).toBe('creator')
   })
 })
