@@ -15,6 +15,5 @@
     "readme/**/*",
     "src/**/*",
     "tests/**/*",
-    "rollup.config.mjs"
   ]
 }
