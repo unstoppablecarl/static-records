@@ -11,13 +11,11 @@ export const PEOPLE = staticRecords<Person>(/* Record Type Name: */ 'Person')
 
 export const JIM = PEOPLE.define(
   'JIM', // id property
-  () => {
-    return {
-      name: 'Jim',
-      manager: SUE,
-      emergency_contact: null,
-    }
-  },
+  () => ({
+    name: 'Jim',
+    manager: SUE,
+    emergency_contact: null,
+  }),
 )
 
 export const SUE = PEOPLE.define(
