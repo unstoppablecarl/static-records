@@ -1,3 +1,6 @@
+// @ts-expect-error
+const __DEV__ = typeof __DEV__ !== 'undefined' ? __DEV__ : process.env.NODE_ENV !== 'production';
+
 export * from './deepFreeze'
 export * from './staticRecords'
 export * from './staticRecordsFactory'
