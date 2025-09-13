@@ -6,6 +6,7 @@ export * from './deepFreeze'
 export * from './staticRecords'
 export * from './staticRecordsFactory'
 export * from './recordType'
+export * from './lazyProperties'
 export type {
   NeverProtoKeys,
 } from './type-util'
