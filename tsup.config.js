@@ -7,7 +7,7 @@ export default defineConfig([
     entry: ['src/index.ts'],
     format: ['cjs', 'esm'],
     define: {
-      __DEV__: 'false',
+      __DEV__: `process.env.NODE_ENV !== 'production'`,
     },
   },
 ])
