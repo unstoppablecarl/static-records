@@ -1,4 +1,4 @@
-export const recordTypeKey: unique symbol = Symbol('record_type')
+export const recordTypeKey: unique symbol = Symbol(__DEV__ ? 'Record Type' : '')
 
 export const isStaticRecord = (obj: any) => obj[recordTypeKey] !== undefined
 
