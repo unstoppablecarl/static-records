@@ -13,7 +13,6 @@ describe('staticTypeFactory() tests', async () => {
   describe('options.freezer = custom', async () => {
     const makeStaticRecords = staticRecordsFactory({
       freezer: (record) => {
-        // @ts-expect-error
         record.tested = 'freezer'
         return record
       },

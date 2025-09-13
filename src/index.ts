@@ -1,4 +1,4 @@
-const __DEV__ = typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production';
+const __DEV__ = typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production'
 
 export * from './deepFreeze'
 export * from './staticRecords'

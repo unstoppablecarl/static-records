@@ -16,13 +16,6 @@ export type StaticRecords<
   toObject(): Record<string, WithRecordType<Item>>,
 }
 
-export type Creator<R extends HasId> = (id: string, recordType: string) => R
-export type Freezer = false | (<T extends Record<string | symbol, any>>(obj: T) => T)
-export type Filler<
-  ProtoItem extends Rec,
-  Input extends Rec,
-> = (item: ProtoItem, input: Input) => void
-
 export type Definer<
   ProtoItem extends Rec,
   Input extends Rec
@@ -32,10 +25,25 @@ export type Options<
   ProtoItem extends HasId,
   Input extends Rec
 > = {
-  freezer?: Freezer,
-  creator?: Creator<ProtoItem>,
+  creator?: Creator<ProtoItem, Input>,
   filler?: Filler<ProtoItem, Input>
+  freezer?: Freezer<ProtoItem, Input>,
 }
+
+export type Creator<
+  ProtoItem extends HasId,
+  Input extends Rec
+> = (id: string, recordType: string, options?: Options<ProtoItem, Input>) => ProtoItem
+
+export type Filler<
+  ProtoItem extends HasId,
+  Input extends Rec,
+> = (item: ProtoItem, input: Input, options?: Options<ProtoItem, Input>) => void
+
+export type Freezer<
+  ProtoItem extends HasId,
+  Input extends Rec,
+> = false | ((obj: Rec, options?: Options<ProtoItem, Input>) => void)
 
 export function staticRecords<
   Item extends HasId,
@@ -53,11 +61,11 @@ export function staticRecords<
   let locked = false
 
   const freezer = options?.freezer ?? deepFreeze
-  const creator = options?.creator ?? ((id, recordType) => {
+  const creator: Creator<ProtoItem, Input> = options?.creator ?? ((id, recordType): ProtoItem => {
     return {
       id,
       [recordTypeKey]: recordType,
-    }
+    } as ProtoItem
   })
   const filler = options?.filler ?? Object.assign
 
@@ -71,7 +79,9 @@ export function staticRecords<
         throw new Error(`A Static Record Type "${recordType}" with id "${id}" already exists.`)
       }
 
-      const item = creator(id, recordType) as ItemWithKey
+      // item is a ProtoItem, but it is typed as what it
+      // will become externally: an ItemWithKey
+      const item = creator(id, recordType, options) as unknown as ItemWithKey
 
       staticData[id] = item
       definers.set(id, definer)
@@ -89,10 +99,11 @@ export function staticRecords<
         filler(
           item as unknown as ProtoItem,
           definer(item as unknown as ProtoItem),
+          options,
         )
 
         if (freezer) {
-          freezer(item)
+          freezer(item, options)
         }
       })
 

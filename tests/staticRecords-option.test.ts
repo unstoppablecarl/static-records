@@ -12,7 +12,6 @@ describe('staticRecords() option tests', async () => {
   it('options.freezer = custom', async () => {
     const VEHICLES = staticRecords<Vehicle>('VEHICLE', {
       freezer: (record) => {
-        // @ts-expect-error
         record.tested = 'freezer'
         return record
       },

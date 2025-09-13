@@ -8,7 +8,7 @@ export type IfNever<
   Default = never
 > =
   [Input] extends [never] ?
-  [Item] extends [never] ? Default : Item : Input
+    [Item] extends [never] ? Default : Item : Input
 
 export type MakeOptionsInput<
   Item extends HasId,
