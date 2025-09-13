@@ -1,3 +1,5 @@
+// Stryker disable next-line all
+/* v8 ignore next -- @preserve */
 export const recordTypeKey: unique symbol = Symbol(__DEV__ ? 'Record Type' : '')
 
 export const isStaticRecord = (obj: any) => obj[recordTypeKey] !== undefined

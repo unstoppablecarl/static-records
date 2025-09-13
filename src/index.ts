@@ -1,3 +1,5 @@
+// Stryker disable next-line all
+/* v8 ignore next -- @preserve */
 const __DEV__ = typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production'
 
 export * from './deepFreeze'
