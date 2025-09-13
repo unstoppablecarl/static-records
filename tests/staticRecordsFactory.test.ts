@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { staticRecordsFactory } from '../src/staticRecordsFactory'
-import { defineAndLockVehicles } from './helpers/vehicles'
+import { defineAndLockVehicles } from './_helpers/vehicles'
 import { recordTypeKey } from '../src'
 
 type Vehicle = {
