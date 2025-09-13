@@ -1,6 +1,6 @@
 import { type Options, staticRecords } from './staticRecords'
 import type { NeverProtoKeys, Rec } from './type-util'
-import type { DefaultProtoItem, HasId } from './recordTypeKey'
+import type { DefaultProtoItem, HasId } from './recordType'
 
 export type IfNever<
   Input,

@@ -1,5 +1,5 @@
 import { deepFreeze } from './deepFreeze'
-import { type DefaultProtoItem, type HasId, recordTypeKey, type WithRecordType } from './recordTypeKey'
+import { type DefaultProtoItem, type HasId, recordTypeKey, type WithRecordType } from './recordType'
 import type { NeverProtoKeys, Rec } from './type-util'
 
 export type StaticRecords<

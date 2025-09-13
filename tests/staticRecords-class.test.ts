@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { getRecordType, type HasId, type HasRecordKey, recordTypeKey } from '../src/recordTypeKey'
+import { getRecordType, type HasId, type HasRecordKey, recordTypeKey } from '../src/recordType'
 import { staticRecords } from '../src/staticRecords'
 
 type ThingInput = {

@@ -5,7 +5,7 @@ const __DEV__ = typeof process !== 'undefined' && process.env?.NODE_ENV !== 'pro
 export * from './deepFreeze'
 export * from './staticRecords'
 export * from './staticRecordsFactory'
-export * from './recordTypeKey'
+export * from './recordType'
 export type {
   NeverProtoKeys,
 } from './type-util'
@@ -14,4 +14,4 @@ export type {
   WithRecordType,
   DefaultProtoItem,
   HasId,
-} from './recordTypeKey'
+} from './recordType'

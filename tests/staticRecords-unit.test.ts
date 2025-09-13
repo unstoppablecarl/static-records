@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { getRecordType, isStaticRecord, staticRecords } from '../src'
-import { recordTypeKey } from '../src/recordTypeKey'
+import { recordTypeKey } from '../src/recordType'
 
 type Vehicle = {
   id: string,
