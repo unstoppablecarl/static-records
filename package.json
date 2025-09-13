@@ -33,6 +33,7 @@
   },
   "files": [
     "dist/*",
+    "src/*",
     "pnpm-lock.yaml",
     "LICENSE",
     "README.md"
