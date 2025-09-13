@@ -1,47 +1,79 @@
-import { describe, expect, it } from 'vitest'
-import { LAZY_PROPS, recordTypeKey } from '../../src'
-import { CAR } from './_helpers/thawed-vehicles-data'
-import { DAN } from './_helpers/thawed-drivers-data'
+import { describe, expect, it, vi } from 'vitest'
+import { lazy, type Lazy, LAZY_PROPS, lazyFiller, lazyFrozenFiller, recordTypeKey, staticRecords } from '../../src'
 
-describe('lazyProperties', async () => {
-  it('filler', async () => {
-    const desc = Object.getOwnPropertyDescriptor(CAR, 'driverName')
+describe('lazyFiller', () => {
+  type Driver = {
+    id: string,
+    name: string,
+    carName: string,
+    location: string,
+  }
+
+  type DriverInput = {
+    name: string,
+    age: number,
+    carName: Lazy<string>
+    location: Lazy<string>
+  }
+
+  const DRIVERS = staticRecords<Driver, never, DriverInput>('DRIVER', {
+    freezer: false,
+    filler: lazyFiller,
+  })
+
+  const DAN = DRIVERS.define(
+    'DAN',
+    () => ({
+      name: 'Dan',
+      age: 20,
+      carName: lazy(() => {
+        return 'Mustang'
+      }),
+      location: lazy(() => {
+        return 'Arizona'
+      }),
+    }),
+  )
+  DRIVERS.lock()
+
+  it('lazy property description', () => {
+    const desc = Object.getOwnPropertyDescriptor(DAN, 'carName')
     expect(desc).to.include({
       configurable: true,
       enumerable: true,
     })
     expect(desc?.get).to.not.be.undefined
+  })
 
-    // @ts-expect-error
-    expect(CAR[LAZY_PROPS]).toEqual(new Set([
-      'driverName',
-    ]))
-
-    expect(CAR.driverName).toEqual('Dan')
-
-    // @ts-expect-error
-    expect(CAR[LAZY_PROPS]).toEqual(undefined)
-
-    expect(CAR).toEqual({
-      id: CAR.id,
-      name: CAR.name,
-      [recordTypeKey]: 'VEHICLE',
-      driverName: 'Dan',
-    })
-
-    const desc2 = Object.getOwnPropertyDescriptor(DAN, 'carName')
-    expect(desc2).to.include({
+  it('non-lazy property description', () => {
+    const desc = Object.getOwnPropertyDescriptor(DAN, 'age')
+    expect(desc).to.include({
       configurable: true,
+      writable: true,
       enumerable: true,
     })
-    expect(desc?.get).to.not.be.undefined
+    expect(desc?.get).to.be.undefined
+  })
 
+  it('extension prevented', () => {
+    expect(Object.isExtensible(DAN)).toBe(true)
+  })
+
+  it('lifecycle', () => {
     // @ts-expect-error
     expect(DAN[LAZY_PROPS]).toEqual(new Set([
       'carName',
+      'location',
     ]))
 
-    expect(DAN.carName).toEqual('Car')
+    expect(DAN.carName).toEqual('Mustang')
+
+    // @ts-expect-error
+    expect(DAN[LAZY_PROPS]).toEqual(new Set([
+      'location',
+    ]))
+
+    expect(DAN.location).toEqual('Arizona')
 
     // @ts-expect-error
     expect(DAN[LAZY_PROPS]).toEqual(undefined)
@@ -50,7 +82,27 @@ describe('lazyProperties', async () => {
       id: DAN.id,
       name: DAN.name,
       [recordTypeKey]: 'DRIVER',
-      carName: 'Car',
+      carName: 'Mustang',
+      location: 'Arizona',
+      age: 20,
+    })
+  })
+
+  it('lifecycle PRODUCTION', () => {
+    vi.stubGlobal('__DEV__', false)
+
+    // @ts-expect-error
+    expect(DAN[LAZY_PROPS]).toEqual(undefined)
+    expect(DAN.carName).toEqual('Mustang')
+    expect(DAN.location).toEqual('Arizona')
+
+    expect(DAN).toEqual({
+      id: DAN.id,
+      name: DAN.name,
+      [recordTypeKey]: 'DRIVER',
+      carName: 'Mustang',
+      location: 'Arizona',
+      age: 20,
     })
   })
 })
