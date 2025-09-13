@@ -1,6 +1,8 @@
 import { isStaticRecord } from './recordType'
+import type { Rec } from './type-util'
+import type { Freezer } from './staticRecords'
 
-export function deepFreeze<T extends Record<string | symbol, any>>(obj: T): T {
+export function deepFreeze(obj: Rec) {
   const propNames = Reflect.ownKeys(obj)
 
   // always freeze the targeted obj
@@ -18,6 +20,7 @@ export function deepFreeze<T extends Record<string | symbol, any>>(obj: T): T {
       deepFreeze(value)
     }
   }
-
-  return obj
 }
+
+const _typeCheck: Freezer = deepFreeze;
+
