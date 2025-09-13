@@ -33,7 +33,6 @@
   },
   "files": [
     "dist/*",
-    "srcx/*",
     "pnpm-lock.yaml",
     "LICENSE",
     "README.md"
