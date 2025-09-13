@@ -5,7 +5,7 @@ import {
   recordTypeKey,
   staticRecordsFactory,
   type WithRecordType,
-} from '../src'
+} from '../../src'
 
 describe('staticTypeFactory() types', async () => {
   describe('staticRecordsFactory[] - makeStaticRecords[Vehicle]', async () => {

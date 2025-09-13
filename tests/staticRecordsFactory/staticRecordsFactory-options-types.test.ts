@@ -6,7 +6,7 @@ import {
   type NeverProtoKeys,
   recordTypeKey,
   staticRecordsFactory,
-} from '../src'
+} from '../../src'
 
 describe('staticTypeFactory() options types', async () => {
   it('staticRecordsFactory[BaseItem]', async () => {

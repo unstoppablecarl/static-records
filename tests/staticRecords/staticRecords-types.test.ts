@@ -1,5 +1,5 @@
 import { describe, expectTypeOf, it } from 'vitest'
-import { type HasId, type HasRecordKey, recordTypeKey, staticRecords, type WithRecordType } from '../src'
+import { type HasId, type HasRecordKey, recordTypeKey, staticRecords, type WithRecordType } from '../../src'
 
 describe('staticRecords() types', async () => {
   describe('GENERICS: Item', async () => {
