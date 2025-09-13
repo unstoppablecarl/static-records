@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { recordTypeKey, staticRecords } from '../src'
 import { defineAndLockVehicles } from './helpers/vehicles'
+import type { Rec } from '../src/type-util'
 
 type Vehicle = {
   id: string,
@@ -64,5 +65,32 @@ describe('staticRecords() option tests', async () => {
 
     expect(CAR.tested).toBe('creator')
     expect(VAN.tested).toBe('creator')
+  })
+
+  it('options.filler gets freezer argument', async () => {
+
+    let tested = false
+
+    const freezer = (record: Rec): Rec => {
+      record.tested = 'freezer'
+      return record
+    }
+
+    const VEHICLES = staticRecords<Vehicle>('VEHICLE', {
+      freezer,
+      filler: (item, input, freezerArg) => {
+        expect(freezerArg).toBe(freezer)
+        Object.assign(item, input)
+        tested = true
+      },
+    })
+
+    const { CAR, VAN } = defineAndLockVehicles(VEHICLES)
+
+    expect(CAR.tested).toBe('freezer')
+    expect(VAN.tested).toBe('freezer')
+    expect(Object.isFrozen(CAR)).toBe(false)
+    expect(Object.isFrozen(VAN)).toBe(false)
+    expect(tested).toBe(true)
   })
 })
