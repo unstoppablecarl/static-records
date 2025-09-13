@@ -27,23 +27,20 @@ export type Options<
 > = {
   creator?: Creator<ProtoItem, Input>,
   filler?: Filler<ProtoItem, Input>
-  freezer?: Freezer<ProtoItem, Input>,
+  freezer?: Freezer
 }
 
 export type Creator<
   ProtoItem extends HasId,
   Input extends Rec
-> = (id: string, recordType: string, options?: Options<ProtoItem, Input>) => ProtoItem
+> = (id: string, recordType: string) => ProtoItem
 
 export type Filler<
   ProtoItem extends HasId,
   Input extends Rec,
-> = (item: ProtoItem, input: Input, options?: Options<ProtoItem, Input>) => void
+> = (item: ProtoItem, input: Input, freezer: Freezer) => void
 
-export type Freezer<
-  ProtoItem extends HasId,
-  Input extends Rec,
-> = false | ((obj: Rec, options?: Options<ProtoItem, Input>) => void)
+export type Freezer = false | ((obj: Rec) => void)
 
 export function staticRecords<
   Item extends HasId,
@@ -81,7 +78,7 @@ export function staticRecords<
 
       // item is a ProtoItem, but it is typed as what it
       // will become externally: an ItemWithKey
-      const item = creator(id, recordType, options) as unknown as ItemWithKey
+      const item = creator(id, recordType) as unknown as ItemWithKey
 
       staticData[id] = item
       definers.set(id, definer)
@@ -99,11 +96,11 @@ export function staticRecords<
         filler(
           item as unknown as ProtoItem,
           definer(item as unknown as ProtoItem),
-          options,
+          freezer
         )
 
         if (freezer) {
-          freezer(item, options)
+          freezer(item)
         }
       })
 
