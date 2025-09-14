@@ -68,7 +68,6 @@ function fillLazyProps(
 
   bindLazyProps(item)
 
-// Improved with early returns
   function bindLazyProps(
     target: Rec,
     parentProxy?: HasParent,
