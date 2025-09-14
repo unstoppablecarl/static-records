@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { LAZY_PROPS, recordTypeKey } from '../../src'
 import { CAR } from './_helpers/frozen-vehicles-data'
 import { DAN } from './_helpers/frozen-drivers-data'
+import { getLazyProps } from './_helpers/_helpers'
 
 describe('frozenFiller example', async () => {
   it('filler frozen', async () => {
@@ -12,31 +13,27 @@ describe('frozenFiller example', async () => {
     })
     expect(desc?.get).to.not.be.undefined
 
-    // @ts-expect-error
-    expect(CAR[LAZY_PROPS]).toEqual(new Set([
+    expect(getLazyProps(CAR)).toEqual(new Set([
       'driverName',
-      'driverIsAdult'
+      'driverIsAdult',
     ]))
 
-    console.log(CAR)
     expect(CAR.driverName).toEqual('Dan')
 
-    // @ts-expect-error
-    expect(CAR[LAZY_PROPS]).toEqual(new Set([
-      'driverIsAdult'
+    expect(getLazyProps(CAR)).toEqual(new Set([
+      'driverIsAdult',
     ]))
 
     expect(CAR.driverIsAdult).toEqual(true)
 
-    // @ts-expect-error
-    expect(CAR[LAZY_PROPS]).toEqual(undefined)
+    expect(getLazyProps(CAR)).toEqual(undefined)
 
     expect(CAR).toEqual({
       id: CAR.id,
       name: CAR.name,
       [recordTypeKey]: 'VEHICLE',
       driverName: 'Dan',
-      driverIsAdult: true
+      driverIsAdult: true,
     })
 
     const desc2 = Object.getOwnPropertyDescriptor(DAN, 'carName')
@@ -46,15 +43,12 @@ describe('frozenFiller example', async () => {
     })
     expect(desc?.get).to.not.be.undefined
 
-    // @ts-expect-error
-    expect(DAN[LAZY_PROPS]).toEqual(new Set([
-      'carName'
+    expect(getLazyProps(DAN)).toEqual(new Set([
+      'carName',
     ]))
 
     expect(DAN.carName).toEqual('Car')
-
-    // @ts-expect-error
-    expect(DAN[LAZY_PROPS]).toEqual(undefined)
+    expect(getLazyProps(DAN)).toEqual(undefined)
 
     expect(DAN).toEqual({
       id: DAN.id,

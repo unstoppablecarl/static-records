@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
-import { lazy, type Lazy, LAZY_PROPS, lazyFrozenFiller, recordTypeKey, staticRecords } from '../../src'
+import { lazy, type Lazy, lazyFrozenFiller, recordTypeKey, staticRecords } from '../../src'
+import { getLazyProps } from './_helpers/_helpers'
 
 describe('frozenFiller', () => {
   type Driver = {
@@ -60,23 +61,20 @@ describe('frozenFiller', () => {
   })
 
   it('lifecycle', () => {
-    // @ts-expect-error
-    expect(DAN[LAZY_PROPS]).toEqual(new Set([
+    expect(getLazyProps(DAN)).toEqual(new Set([
       'carName',
       'location',
     ]))
 
     expect(DAN.carName).toEqual('Mustang')
 
-    // @ts-expect-error
-    expect(DAN[LAZY_PROPS]).toEqual(new Set([
+    expect(getLazyProps(DAN)).toEqual(new Set([
       'location',
     ]))
 
     expect(DAN.location).toEqual('Arizona')
 
-    // @ts-expect-error
-    expect(DAN[LAZY_PROPS]).toEqual(undefined)
+    expect(getLazyProps(DAN)).toEqual(undefined)
 
     expect(DAN).toEqual({
       id: DAN.id,
@@ -91,8 +89,7 @@ describe('frozenFiller', () => {
   it('lifecycle PRODUCTION', () => {
     vi.stubGlobal('__DEV__', false)
 
-    // @ts-expect-error
-    expect(DAN[LAZY_PROPS]).toEqual(undefined)
+    expect(getLazyProps(DAN)).toEqual(undefined)
     expect(DAN.carName).toEqual('Mustang')
     expect(DAN.location).toEqual('Arizona')
 

@@ -30,7 +30,6 @@ describe('example tests', async () => {
       emergency_contact: JIM,
       preferred_vehicle: null,
     })
-    console.log(SUE.preferred_vehicle)
 
     expectVehicle(VAN, {
       id: 'VAN',
