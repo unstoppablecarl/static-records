@@ -68,6 +68,7 @@ function fillLazyProps(
 
   bindLazyProps(item)
 
+// Improved with early returns
   function bindLazyProps(
     target: Rec,
     parentProxy?: HasParent,
@@ -78,18 +79,31 @@ function fillLazyProps(
     }
     visited.add(target)
 
-    let hasLazy = hasLazyResolvers(target)
+    const hasLazy = hasLazyResolvers(target)
+
     if (!hasLazy) {
       if (freeze) {
         Object.freeze(target)
       }
+      for (const prop of Reflect.ownKeys(target)) {
+        const value = target[prop]
+        if (validChild(value)) {
+          bindLazyProps(
+            value,
+            makeProxy(target, parentProxy, prop, 'parent', 'Parent'),
+            rootProp ?? prop,
+          )
+        }
+      }
+      return
     }
 
+    // has lazy props
     for (const prop of Reflect.ownKeys(target)) {
       const value = target[prop]
 
       if (!isLazyResolver(value)) {
-        if (freeze && hasLazy) {
+        if (freeze) {
           Object.defineProperty(target, prop, {
             value: value,
             writable: false,
@@ -106,14 +120,13 @@ function fillLazyProps(
         }
         continue
       }
+
       // define lazy prop
       if (__DEV__) {
         trackLazyProp(target, prop)
       }
       Object.defineProperty(target, prop, {
         get() {
-
-          // throw new Error('a' + String(rootProp ?? prop))
           const newValue = value(
             makeProxy(target, parentProxy, prop, 'parent', 'Parent'),
             makeProxy(root as Rec, undefined, rootProp ?? prop, undefined, 'Root'),
@@ -145,12 +158,11 @@ function fillLazyProps(
       })
     }
 
-    if (hasLazy && freeze) {
+    if (freeze) {
       // no new properties
       Object.preventExtensions(target)
     }
   }
-
 }
 
 function trackLazyProp(item: Rec, prop: PropertyKey) {
