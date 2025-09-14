@@ -6,9 +6,11 @@ export type HasParent = Rec & {
   parent: HasParent | undefined
 }
 
-export type Lazy<T extends any = any> = {
+export type ObjWithParent<T extends Rec> = T & HasParent
+
+export type Lazy<T extends any = any, P extends Rec = Rec> = {
   [LAZY_RESOLVER]: true,
-  (self: HasParent, root: Rec | undefined): T
+  (parent: ObjWithParent<P>, root: Rec | undefined): T
 } | T
 
 // Stryker disable next-line all
@@ -18,7 +20,7 @@ export const LAZY_PROPS: unique symbol = Symbol(__DEV__ ? 'Lazy Properties' : ''
 /* v8 ignore next -- @preserve */
 export const LAZY_RESOLVER: unique symbol = Symbol(__DEV__ ? 'Lazy Function' : '')
 
-export function lazy<T, S extends Rec>(resolver: (self: S & HasParent) => T): Lazy<T> {
+export function lazy<T, S extends Rec, R extends Rec>(resolver: (self: ObjWithParent<S>, root: ObjWithParent<R>) => T): Lazy<T> {
   // @ts-expect-error
   resolver[LAZY_RESOLVER] = true
   return resolver as unknown as Lazy<T>
@@ -32,112 +34,123 @@ export function hasLazyResolvers(target: Rec): boolean {
   return !!Object.values(target).find(isLazyResolver)
 }
 
-const freezeMustBeFalse = (method: string) => `When using filler: ${method}, option.freeze must be false`
-
 export function lazyFrozenFiller<
   Item extends HasId & Rec,
   Input extends Rec
 >(item: Item, input: Input, freezer: Freezer) {
-  if (freezer !== false) {
-    throw new Error(freezeMustBeFalse(`lazyFrozenFiller`))
-  }
-  Object.assign(item, input)
-  bindLazyProps(item, true)
+  fillLazyProps(item, input, freezer, 'lazyFrozenFiller', true)
+
 }
 
 export function lazyFiller<
   Item extends HasId & Rec,
   Input extends Rec
 >(item: Item, input: Input, freezer: Freezer) {
-  if (freezer !== false) {
-    throw new Error(freezeMustBeFalse(`lazyFiller`))
-  }
-
-  Object.assign(item, input)
-  bindLazyProps(item, false)
+  fillLazyProps(item, input, freezer, 'lazyFiller', false)
 }
 
 const validChild = (v: any) => !Object.isFrozen(v) && !isStaticRecord(v)
 
-function bindLazyProps(
-  target: Rec,
+function fillLazyProps(
+  item: Rec,
+  input: Rec,
+  freezer: Freezer,
+  method: string,
   freeze: boolean,
-  parentProxy: HasParent | undefined = undefined,
-  root: Rec | undefined = undefined,
-  visited: WeakSet<any> = new WeakSet<any>(),
 ) {
-  if (visited.has(target)) {
-    return
+  if (freezer !== false) {
+    throw new Error(`When using filler: ${method}, option.freeze must be false`)
   }
-  visited.add(target)
+  Object.assign(item, input)
 
-  let hasLazy = hasLazyResolvers(target)
-  if (!hasLazy) {
-    if (freeze) {
-      Object.freeze(target)
+  const root = item
+  const visited: WeakSet<any> = new WeakSet<any>()
+
+  bindLazyProps(item)
+
+  function bindLazyProps(
+    target: Rec,
+    parentProxy?: HasParent,
+    rootProp?: string | symbol,
+  ) {
+    if (visited.has(target)) {
+      return
     }
-  }
+    visited.add(target)
 
-  if (root === undefined) {
-    root = target
-  }
-
-  const propNames = Reflect.ownKeys(target)
-  for (const prop of propNames) {
-    const value = target[prop]
-
-    if (!isLazyResolver(value)) {
-      if (freeze && hasLazy) {
-        Object.defineProperty(target, prop, {
-          value: value,
-          writable: false,
-          configurable: false,
-          enumerable: true,
-        })
+    let hasLazy = hasLazyResolvers(target)
+    if (!hasLazy) {
+      if (freeze) {
+        Object.freeze(target)
       }
-      if (validChild(value)) {
-        const newParentProxy = makeParentProxy(target, parentProxy, prop)
-        bindLazyProps(value, freeze, newParentProxy, root, visited)
+    }
+
+    for (const prop of Reflect.ownKeys(target)) {
+      const value = target[prop]
+
+      if (!isLazyResolver(value)) {
+        if (freeze && hasLazy) {
+          Object.defineProperty(target, prop, {
+            value: value,
+            writable: false,
+            configurable: false,
+            enumerable: true,
+          })
+        }
+        if (validChild(value)) {
+          bindLazyProps(
+            value,
+            makeProxy(target, parentProxy, prop, 'parent', 'Parent'),
+            rootProp ?? prop,
+          )
+        }
+        continue
       }
-      continue
+      // define lazy prop
+      if (__DEV__) {
+        trackLazyProp(target, prop)
+      }
+      Object.defineProperty(target, prop, {
+        get() {
+
+          // throw new Error('a' + String(rootProp ?? prop))
+          const newValue = value(
+            makeProxy(target, parentProxy, prop, 'parent', 'Parent'),
+            makeProxy(root as Rec, undefined, rootProp ?? prop, undefined, 'Root'),
+          )
+
+          // convert lazy prop to normal prop
+          Object.defineProperty(target, prop, {
+            value: newValue,
+            writable: !freeze,
+            configurable: !freeze,
+            enumerable: true,
+          })
+
+          if (__DEV__) {
+            untrackLazyProp(target, prop)
+          }
+
+          if (validChild(newValue)) {
+            bindLazyProps(
+              newValue,
+              makeProxy(target, parentProxy, prop, 'parent', 'Parent'),
+              rootProp ?? prop,
+            )
+          }
+
+          return newValue
+        },
+        configurable: true,
+      })
     }
-    // define lazy prop
-    if (__DEV__) {
-      trackLazyProp(target, prop)
+
+    if (hasLazy && freeze) {
+      // no new properties
+      Object.preventExtensions(target)
     }
-    Object.defineProperty(target, prop, {
-      get() {
-
-        const newTarget = makeParentProxy(target, parentProxy, prop)
-        const newValue = value(newTarget, root)
-
-        // convert lazy prop to normal prop
-        Object.defineProperty(target, prop, {
-          value: newValue,
-          writable: !freeze,
-          configurable: !freeze,
-          enumerable: true,
-        })
-
-        if (__DEV__) {
-          untrackLazyProp(target, prop)
-        }
-
-        if (validChild(newValue)) {
-          const newParentProxy = makeParentProxy(target, parentProxy, prop)
-          bindLazyProps(newValue, freeze, newParentProxy, root, visited)
-        }
-
-        return newValue
-      },
-      configurable: true,
-    })
   }
 
-  if (hasLazy && freeze) {
-    // no new properties
-    Object.preventExtensions(target)
-  }
 }
 
 function trackLazyProp(item: Rec, prop: PropertyKey) {
@@ -155,33 +168,36 @@ function untrackLazyProp(item: Rec, prop: PropertyKey) {
   return false
 }
 
-export const SELF_PROXY: unique symbol = Symbol('Self Proxy')
+export const PROXY_KEY: unique symbol = Symbol('Self Proxy')
 
-function makeParentProxy<T extends Rec>(target: T, parent: Rec | undefined, selfProp: string | symbol): HasParent {
-  if (selfProp === 'static') {
-    console.log('makeParentProxy: ', { target, parent, selfProp })
-  }
+function makeProxy<T extends Rec>(
+  target: T,
+  parent: Rec | undefined,
+  selfParentProp: string | symbol | undefined,
+  PARENT_KEY: string | undefined = 'parent',
+  PROXY_VALUE: string | undefined = undefined,
+): HasParent {
   return new Proxy(target, {
     get(target: T, p: PropertyKey, receiver?: any): any {
-      if (p === 'parent') {
+      if (p === PARENT_KEY) {
         return parent
       }
-      if (p === selfProp) {
-        throw new Error(`cannot read self property: "${String(selfProp)}" inside its own resolver`)
+      if (p === selfParentProp) {
+        return undefined
       }
-      if (__DEV__ && p === SELF_PROXY) {
-        return true
+      if (__DEV__ && p === PROXY_KEY) {
+        return PROXY_VALUE
       }
       return Reflect.get(target, p, receiver)
     },
     has(target: T, p: PropertyKey): boolean {
-      if (p === 'parent') {
+      if (p === PARENT_KEY) {
         return true
       }
-      if (p === selfProp) {
-        return true
+      if (p === selfParentProp) {
+        return false
       }
-      if (__DEV__ && p === SELF_PROXY) {
+      if (__DEV__ && p === PROXY_KEY) {
         return true
       }
       return Reflect.has(target, p)
@@ -191,7 +207,7 @@ function makeParentProxy<T extends Rec>(target: T, parent: Rec | undefined, self
       const enumerable = true
       const writable = true
 
-      if (p === 'parent') {
+      if (p === PARENT_KEY) {
         return {
           configurable,
           enumerable,
@@ -200,7 +216,7 @@ function makeParentProxy<T extends Rec>(target: T, parent: Rec | undefined, self
         }
       }
 
-      if (__DEV__ && p === SELF_PROXY) {
+      if (__DEV__ && p === PROXY_KEY) {
         return {
           configurable,
           enumerable,
@@ -214,10 +230,9 @@ function makeParentProxy<T extends Rec>(target: T, parent: Rec | undefined, self
     ownKeys(target: T): (string | symbol)[] {
       const keys = Reflect.ownKeys(target)
       return [
-        'parent',
-        selfProp,
-        ...__DEV__ ? [SELF_PROXY] : [],
-        ...keys.filter((key) => key !== selfProp),
+        ...PARENT_KEY ? [PARENT_KEY] : [],
+        ...__DEV__ ? [PROXY_KEY] : [],
+        ...keys.filter((key) => key !== selfParentProp),
       ]
     },
   }) as HasParent

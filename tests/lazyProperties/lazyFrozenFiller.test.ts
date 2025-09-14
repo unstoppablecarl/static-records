@@ -102,4 +102,27 @@ describe('frozenFiller', () => {
       age: 20,
     })
   })
+
+  it('freezes object that do not have lazy resolvers', () => {
+    const DRIVERS = staticRecords('DRIVER', {
+      freezer: false,
+      filler: lazyFrozenFiller,
+    })
+
+    const DAN: any = DRIVERS.define(
+      'DAN',
+      () => ({
+        name: 'Dan',
+        static: {
+          foo: 'bar',
+        },
+        carName: lazy(() => {
+          return 'Mustang'
+        }),
+      }),
+    )
+    DRIVERS.lock()
+    expect(Object.isFrozen(DAN.static)).toBe(true)
+    expect(Object.isFrozen(DAN)).toBe(false)
+  })
 })
