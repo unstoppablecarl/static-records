@@ -7,6 +7,7 @@ export * from './staticRecords'
 export * from './staticRecordsFactory'
 export * from './recordType'
 export * from './lazyProperties'
+export { lazyFrozenFiller, lazyFiller } from './lazyProperties/lazyFiller'
 export type {
   NeverProtoKeys,
 } from './type-util'

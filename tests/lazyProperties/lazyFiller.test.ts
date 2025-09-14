@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from 'vitest'
-import { lazy, type Lazy, LAZY_PROPS, lazyFiller, PROXY_KEY, recordTypeKey, staticRecords } from '../../src'
+import { lazy, type Lazy, lazyFiller, recordTypeKey, staticRecords } from '../../src'
 import { getLazyProps, isProxy } from './_helpers/_helpers'
+import { PROXY_KEY } from '../../src/lazyProperties/proxy'
+import { LAZY_PROPS } from '../../src/lazyProperties/trackLazyProps'
 
 function makeExample() {
   type Driver = {

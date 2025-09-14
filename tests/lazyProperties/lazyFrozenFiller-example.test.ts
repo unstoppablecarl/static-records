@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { LAZY_PROPS, recordTypeKey } from '../../src'
+import { recordTypeKey } from '../../src'
 import { CAR } from './_helpers/frozen-vehicles-data'
 import { DAN } from './_helpers/frozen-drivers-data'
 import { getLazyProps } from './_helpers/_helpers'
