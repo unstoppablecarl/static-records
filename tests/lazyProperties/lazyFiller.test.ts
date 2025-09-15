@@ -3,6 +3,7 @@ import { lazy, type Lazy, lazyFiller, recordTypeKey, staticRecords } from '../..
 import { getLazyProps, isProxy } from './_helpers/_helpers'
 import { PROXY_KEY } from '../../src/lazyProperties/proxy'
 import { LAZY_PROPS } from '../../src/lazyProperties/trackLazyProps'
+import { makeLazyFiller } from '../../src/lazyProperties/lazyFiller'
 
 function makeExample() {
   type Driver = {
@@ -171,8 +172,12 @@ describe('lazyFiller', () => {
           foo: 'bar',
         },
         location: lazy((parent, root) => {
-          console.log(root)
-          // expect(parent).toBe(root)
+          // console.log({parent, root})
+          expect(PROXY_KEY in parent).toBe(true)
+          expect(parent.location).toBe(undefined)
+          expect(PROXY_KEY in parent).toBe(true)
+          expect('parent' in parent).toBe(true)
+          expect('location' in parent).toBe(false)
           expect(parent).toEqual({
             id: 'DAN',
             name: 'Dan',
@@ -183,9 +188,29 @@ describe('lazyFiller', () => {
               foo: 'bar',
             },
             [recordTypeKey]: 'DRIVER',
-            [PROXY_KEY]: 'Parent',
+            [PROXY_KEY]: 'parent.location',
             [LAZY_PROPS]: new Set(['location']),
           })
+
+          console.log(root[PROXY_KEY])
+          // expect(root.location).toBe(undefined)
+          // expect(PROXY_KEY in root).toBe(true)
+          // expect('parent' in root).toBe(true)
+          // expect('location' in root).toBe(false)
+
+          // expect(root).toEqual({
+          //   id: 'DAN',
+          //   name: 'Dan',
+          //   carName: 'Mustang',
+          //   parent: undefined,
+          //   location: undefined,
+          //   static: {
+          //     foo: 'bar',
+          //   },
+          //   [recordTypeKey]: 'DRIVER',
+          //   [PROXY_KEY]: 'parent',
+          //   [LAZY_PROPS]: new Set(['location']),
+          // })
 
           return {
             name: 'Arizona',
@@ -202,10 +227,10 @@ describe('lazyFiller', () => {
                   static: {
                     foo: 'bar',
                   },
-                  [PROXY_KEY]: 'Parent',
+                  [PROXY_KEY]: 'parent.location',
                   [recordTypeKey]: 'DRIVER',
                 },
-                [PROXY_KEY]: 'Parent',
+                [PROXY_KEY]: 'parent.address',
                 [LAZY_PROPS]: new Set(['address']),
               })
 
@@ -228,12 +253,12 @@ describe('lazyFiller', () => {
                         static: {
                           foo: 'bar',
                         },
-                        [PROXY_KEY]: 'Parent',
+                        [PROXY_KEY]: 'parent.location',
                         [recordTypeKey]: 'DRIVER',
                       },
-                      [PROXY_KEY]: 'Parent',
+                      [PROXY_KEY]: 'parent.address',
                     },
-                    [PROXY_KEY]: 'Parent',
+                    [PROXY_KEY]: 'parent.extra',
                     [LAZY_PROPS]: new Set(['extra']),
                   })
 
@@ -286,7 +311,7 @@ describe('lazyFiller', () => {
             parent: undefined,
             country: undefined,
             [recordTypeKey]: 'DRIVER',
-            [PROXY_KEY]: 'Parent',
+            [PROXY_KEY]: 'parent.country',
             [LAZY_PROPS]: new Set(['country']),
           })
 
@@ -387,5 +412,112 @@ describe('lazyFiller', () => {
     expect(DAN.alpha).toBe(alpha)
     expect(DAN.beta).toBe(beta)
     expect(isProxy(DAN)).toBe(false)
+  })
+
+  it('makeLazyFiller defaults', () => {
+    const filler = makeLazyFiller()
+    const THINGS = staticRecords('THINGS', {
+      filler,
+      freezer: false,
+    })
+
+    const JIM = THINGS.define(
+      'JIM',
+      () => ({
+        name: 'Jim',
+        meta: lazy((parent) => {
+          return {
+            testing: 'something',
+            foo: lazy((parent) => {
+              expect(parent.parent).toEqual({
+                id: 'JIM',
+                name: 'Jim',
+                parent: undefined,
+                [PROXY_KEY]: 'parent.meta',
+                [recordTypeKey]: 'THINGS'
+              })
+
+              return 'bar'
+            }),
+          }
+        }),
+      }),
+    )
+    THINGS.lock()
+
+    expect(Object.isFrozen(JIM)).toBe(false)
+    expect(JIM).toEqual({
+      id: 'JIM',
+      name: 'Jim',
+      meta: {
+        testing: 'something',
+        foo: 'bar'
+      },
+      [recordTypeKey]: 'THINGS',
+    })
+  })
+
+  it('makeLazyFiller freeze = true', () => {
+    const filler = makeLazyFiller({
+      freeze: true
+    })
+    const THINGS = staticRecords('THINGS', {
+      filler,
+      freezer: false,
+    })
+
+    const JIM = THINGS.define(
+      'JIM',
+      () => ({
+        name: 'Jim',
+      }),
+    )
+    THINGS.lock()
+
+    expect(Object.isFrozen(JIM)).toBe(true)
+  })
+
+  it('makeLazyFiller custom parentKey', () => {
+    const filler = makeLazyFiller({
+      parentKey: '__parent',
+    })
+    const THINGS = staticRecords('THINGS', {
+      filler,
+      freezer: false,
+    })
+
+    const JIM = THINGS.define(
+      'JIM',
+      () => ({
+        name: 'Jim',
+        meta: lazy((parent) => {
+          return {
+            testing: 'something',
+            foo: lazy((parent) => {
+              expect(parent.__parent).toEqual({
+                id: 'JIM',
+                name: 'Jim',
+                [PROXY_KEY]: 'parent.meta',
+                [recordTypeKey]: 'THINGS',
+              })
+
+              return 'bar'
+            }),
+          }
+        }),
+      }),
+    )
+    THINGS.lock()
+
+    expect(Object.isFrozen(JIM)).toBe(false)
+    expect(JIM).toEqual({
+      id: 'JIM',
+      name: 'Jim',
+      meta: {
+        testing: 'something',
+        foo: 'bar'
+      },
+      [recordTypeKey]: 'THINGS'
+    })
   })
 })

@@ -1,30 +1,30 @@
 import type { Rec } from '../type-util'
 import type { HasParent } from '../lazyProperties'
 
-export const PROXY_KEY: unique symbol = Symbol('Proxy')
+export const PROXY_KEY: unique symbol = Symbol('proxy')
 
 export function makeProxy<T extends Rec>(
   target: T,
-  parent: Rec | undefined,
-  selfParentProp: string | symbol | undefined,
-  PARENT_KEY: string | undefined = 'parent',
-  PROXY_VALUE: string | undefined = undefined,
+  parent?: Rec,
+  selfParentProp?: string | symbol,
+  parentKey: string | null = 'parent',
+  proxyType: string | undefined = undefined,
 ): HasParent {
   return new Proxy(target, {
     get(target: T, p: PropertyKey, receiver?: any): any {
-      if (p === PARENT_KEY) {
+      if (p === parentKey) {
         return parent
       }
       if (p === selfParentProp) {
         return undefined
       }
       if (__DEV__ && p === PROXY_KEY) {
-        return PROXY_VALUE
+        return proxyType + '.' + String(selfParentProp)
       }
       return Reflect.get(target, p, receiver)
     },
     has(target: T, p: PropertyKey): boolean {
-      if (p === PARENT_KEY) {
+      if (p === parentKey) {
         return true
       }
       if (p === selfParentProp) {
@@ -40,7 +40,7 @@ export function makeProxy<T extends Rec>(
       const enumerable = true
       const writable = true
 
-      if (p === PARENT_KEY) {
+      if (p === parentKey) {
         return {
           configurable,
           enumerable,
@@ -63,7 +63,7 @@ export function makeProxy<T extends Rec>(
     ownKeys(target: T): (string | symbol)[] {
       const keys = Reflect.ownKeys(target)
       return [
-        ...PARENT_KEY ? [PARENT_KEY] : [],
+        ...parentKey ? [parentKey] : [],
         ...__DEV__ ? [PROXY_KEY] : [],
         ...keys.filter((key) => key !== selfParentProp),
       ]

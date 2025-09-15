@@ -1,32 +1,51 @@
 import { type HasId, isStaticRecord } from '../recordType'
 import type { Rec } from '../type-util'
 import { hasLazyResolvers, type HasParent, isLazyResolver } from '../lazyProperties'
-import type { Freezer } from '../staticRecords'
+import type { Filler, Freezer } from '../staticRecords'
 import { makeProxy } from './proxy'
 import { trackLazyProp, untrackLazyProp } from './trackLazyProps'
 
 export function lazyFrozenFiller<
-  Item extends HasId & Rec,
+  ProtoItem extends HasId,
   Input extends Rec
->(item: Item, input: Input, freezer: Freezer) {
-  fillLazyProps(item, input, freezer, 'lazyFrozenFiller', true)
+>(item: ProtoItem, input: Input, freezer: Freezer) {
+  rawLazyFiller(item, input, freezer, 'lazyFrozenFiller', true)
 }
 
 export function lazyFiller<
-  Item extends HasId & Rec,
+  ProtoItem extends HasId,
   Input extends Rec
->(item: Item, input: Input, freezer: Freezer) {
-  fillLazyProps(item, input, freezer, 'lazyFiller', false)
+>(item: ProtoItem, input: Input, freezer: Freezer) {
+  rawLazyFiller(item, input, freezer, 'lazyFiller', false)
+}
+
+export function makeLazyFiller<
+  ProtoItem extends HasId,
+  Input extends Rec,
+>({
+    freeze = false,
+    parentKey = 'parent',
+  }: {
+  freeze?: boolean,
+  parentKey?: string
+} = {}): Filler<ProtoItem, Input> {
+  return ((item: ProtoItem, input: Input, freezer: Freezer) => {
+    rawLazyFiller(item, input, freezer, 'makeLazyFiller', freeze, parentKey)
+  })
 }
 
 const validChild = (v: any) => !Object.isFrozen(v) && !isStaticRecord(v)
 
-function fillLazyProps(
+const PARENT_TYPE = 'parent'
+const ROOT_TYPE = 'root'
+
+export function rawLazyFiller(
   item: Rec,
   input: Rec,
   freezer: Freezer,
   method: string,
   freeze: boolean,
+  parentKey = 'parent',
 ) {
   if (freezer !== false) {
     throw new Error(`When using filler: ${method}, option.freeze must be false`)
@@ -71,7 +90,7 @@ function fillLazyProps(
         rootProp = rootProp ?? prop
         bindLazyProps(
           value,
-          makeProxy(target, parentProxy, prop, 'parent', 'Parent'),
+          makeProxy(target, parentProxy, prop, parentKey, PARENT_TYPE),
           rootProp,
         )
       }
@@ -113,8 +132,8 @@ function fillLazyProps(
     Object.defineProperty(target, prop, {
       get() {
         const newValue = resolver(
-          makeProxy(target, parentProxy, prop, 'parent', 'Parent'),
-          makeProxy(root as Rec, undefined, rootProp ?? prop, undefined, 'Root'),
+          makeProxy(target, parentProxy, prop, parentKey, PARENT_TYPE),
+          makeProxy(root as Rec, undefined, rootProp, undefined, ROOT_TYPE),
         )
 
         Object.defineProperty(target, prop, {
@@ -131,8 +150,8 @@ function fillLazyProps(
         if (validChild(newValue)) {
           bindLazyProps(
             newValue,
-            makeProxy(target, parentProxy, prop, 'parent', 'Parent'),
-            rootProp ?? prop,
+            makeProxy(target, parentProxy, prop, parentKey, PARENT_TYPE),
+            rootProp,
           )
         }
 
@@ -161,7 +180,7 @@ function fillLazyProps(
     if (validChild(value)) {
       bindLazyProps(
         value,
-        makeProxy(target, parentProxy, prop, 'parent', 'Parent'),
+        makeProxy(target, parentProxy, prop, parentKey, PARENT_TYPE),
         rootProp,
       )
     }
