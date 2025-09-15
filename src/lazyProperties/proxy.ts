@@ -70,7 +70,6 @@ export function makeProxy<T extends Rec>(
       return Reflect.getOwnPropertyDescriptor(target, p)
     },
     ownKeys(target: T): (string | symbol)[] {
-      const keys = Reflect.ownKeys(target)
       return [
         ...parentKey ? [parentKey] : [],
         ...__DEV__ ? [PROXY_KEY] : [],

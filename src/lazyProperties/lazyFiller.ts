@@ -127,10 +127,6 @@ export function rawLazyFiller(
         processNonLazyProperty(target, prop, newRootProp, value, parentProxy)
       }
     }
-
-    if (freeze) {
-      Object.preventExtensions(target)
-    }
   }
 
   function setupLazyProperty(
@@ -154,7 +150,7 @@ export function rawLazyFiller(
         Object.defineProperty(target, prop, {
           value: newValue,
           writable: !freeze,
-          configurable: !freeze,
+          configurable: true,
           enumerable: true,
         })
 

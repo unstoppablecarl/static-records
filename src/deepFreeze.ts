@@ -22,5 +22,5 @@ export function deepFreeze(obj: Rec) {
   }
 }
 
-const _typeCheck: Freezer = deepFreeze;
+const _typeCheck: Freezer = deepFreeze
 
