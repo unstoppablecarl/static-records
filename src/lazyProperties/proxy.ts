@@ -5,10 +5,10 @@ export const PROXY_KEY: unique symbol = Symbol('proxy')
 
 export function makeProxy<T extends Rec>(
   target: T,
-  parent?: Rec,
-  selfParentProp?: string | symbol,
-  proxyType?: string | undefined,
-  parentKey: string | null = 'parent',
+  parent: Rec | undefined,
+  selfParentProp: string | symbol | undefined,
+  proxyType: string,
+  parentKey: string | null,
 ): HasParent {
   return new Proxy(target, {
     get(target: T, p: PropertyKey, receiver?: any): any {
@@ -48,7 +48,6 @@ export function makeProxy<T extends Rec>(
           writable: false,
         }
       }
-
       if (p === selfParentProp) {
         return {
           configurable,
