@@ -49,13 +49,13 @@ export function makeProxy<T extends Rec>(
         }
       }
       if (p === selfParentProp) {
-        const desc = Reflect.getOwnPropertyDescriptor(target, p)
+        const desc = Reflect.getOwnPropertyDescriptor(target, p) as PropertyDescriptor
 
         return {
-          configurable: desc?.configurable ?? configurable,
-          enumerable: desc?.enumerable ?? enumerable,
+          configurable: desc.configurable,
+          enumerable: desc.enumerable,
+          writable: desc.writable,
           value: undefined,
-          writable: desc?.writable ?? writable,
         }
       }
       if (__DEV__ && p === PROXY_KEY) {
