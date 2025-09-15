@@ -60,9 +60,11 @@ export function rawLazyFiller(
   }
   Object.assign(item, input)
   const root = item
-  const boundTargets = new WeakSet<any>()
+  const boundTargets = new Set<any>()
 
   bindLazyProps(item)
+
+  boundTargets.clear()
 
   function bindLazyProps(
     target: Rec,
