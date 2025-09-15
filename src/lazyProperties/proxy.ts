@@ -45,10 +45,18 @@ export function makeProxy<T extends Rec>(
           configurable,
           enumerable,
           value: parent,
-          writable,
+          writable: false,
         }
       }
 
+      if (p === selfParentProp) {
+        return {
+          configurable,
+          enumerable: true,
+          value: undefined,
+          writable,
+        }
+      }
       if (__DEV__ && p === PROXY_KEY) {
         return {
           configurable,
