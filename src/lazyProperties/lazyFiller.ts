@@ -105,11 +105,11 @@ export function rawLazyFiller(
     for (const prop of Reflect.ownKeys(target)) {
       const value = target[prop]
 
-      rootProp = rootProp ?? prop
+      const newRootProp = rootProp ?? prop
       if (isLazyResolver(value)) {
-        setupLazyProperty(target, prop, rootProp, value, parentProxy)
+        setupLazyProperty(target, prop, newRootProp, value, parentProxy)
       } else {
-        processNonLazyProperty(target, prop, rootProp, value, parentProxy)
+        processNonLazyProperty(target, prop, newRootProp, value, parentProxy)
       }
     }
 
