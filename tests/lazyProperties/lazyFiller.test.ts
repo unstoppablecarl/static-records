@@ -523,4 +523,34 @@ describe('lazyFiller', () => {
 
     expect(isProxy(DAN)).toBe(false)
   })
+
+  it('test array', () => {
+    const DRIVERS = staticRecords('DRIVER', {
+      freezer: false,
+      filler: lazyFiller,
+    })
+
+    const DAN: any = DRIVERS.define(
+      'DAN',
+      () => ({
+        stuff: [
+          lazy(() => 'a'),
+          lazy(() => 'b'),
+          lazy(() => 'c'),
+        ],
+        extra: lazy(() => [
+          'a', 'b', 'c',
+        ]),
+      }),
+    )
+
+    DRIVERS.lock()
+
+    expect(DAN.stuff).toEqual(['a', 'b', 'c'])
+    expect(DAN.stuff[0]).toBe('a')
+    expect(DAN.stuff[1]).toBe('b')
+    expect(DAN.stuff[2]).toBe('c')
+
+    expect(DAN.extra).toEqual(['a', 'b', 'c'])
+  })
 })
