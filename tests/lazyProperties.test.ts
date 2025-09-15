@@ -8,6 +8,7 @@ import {
   lazyFrozenFiller,
   staticRecords,
 } from '../src'
+import { makeLazyFiller } from '../src/lazyProperties/lazyFiller'
 
 describe('lazyProperties', async () => {
   it('lazy()', async () => {
@@ -25,6 +26,20 @@ describe('lazyProperties', async () => {
     }))
     expect(isLazyResolver(target)).toEqual(true)
     expect(isLazyResolver({ foo: 'bar' })).toEqual(false)
+
+    const values = [
+      null,
+      undefined,
+      false,
+      0,
+      '',
+      {}
+    ]
+
+    values.forEach((v) => {
+      expect(isLazyResolver(v)).toBe(false)
+    })
+
   })
 
   it('hasLazyResolvers()', async () => {
@@ -65,5 +80,19 @@ describe('lazyProperties', async () => {
     expect(() => {
       R.lock()
     }).toThrowError(`When using filler: lazyFrozenFiller, option.freeze must be false`)
+  })
+
+  it('lazyFiller freezer exception', async () => {
+    const R = staticRecords('Foo', {
+      filler: makeLazyFiller(),
+    })
+
+    R.define('A', () => ({
+      foo: 'bar',
+    }))
+
+    expect(() => {
+      R.lock()
+    }).toThrowError(`When using filler: makeLazyFiller, option.freeze must be false`)
   })
 })

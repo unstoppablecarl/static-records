@@ -434,7 +434,7 @@ describe('lazyFiller', () => {
                 name: 'Jim',
                 parent: undefined,
                 [PROXY_KEY]: 'parent.meta',
-                [recordTypeKey]: 'THINGS'
+                [recordTypeKey]: 'THINGS',
               })
 
               return 'bar'
@@ -451,7 +451,7 @@ describe('lazyFiller', () => {
       name: 'Jim',
       meta: {
         testing: 'something',
-        foo: 'bar'
+        foo: 'bar',
       },
       [recordTypeKey]: 'THINGS',
     })
@@ -459,7 +459,7 @@ describe('lazyFiller', () => {
 
   it('makeLazyFiller freeze = true', () => {
     const filler = makeLazyFiller({
-      freeze: true
+      freeze: true,
     })
     const THINGS = staticRecords('THINGS', {
       filler,
@@ -515,9 +515,21 @@ describe('lazyFiller', () => {
       name: 'Jim',
       meta: {
         testing: 'something',
-        foo: 'bar'
+        foo: 'bar',
       },
-      [recordTypeKey]: 'THINGS'
+      [recordTypeKey]: 'THINGS',
+    })
+
+    const desc = Object.getOwnPropertyDescriptor(JIM, 'meta')
+
+    expect(desc).toEqual({
+      writable: true,
+      configurable: true,
+      enumerable: true,
+      value: {
+        foo: 'bar',
+        'testing': 'something',
+      },
     })
   })
 })

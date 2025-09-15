@@ -124,5 +124,14 @@ describe('frozenFiller', () => {
     DRIVERS.lock()
     expect(Object.isFrozen(DAN.static)).toBe(true)
     expect(Object.isFrozen(DAN)).toBe(false)
+
+    const desc = Object.getOwnPropertyDescriptor(DAN, 'carName')
+
+    expect(desc).toMatchObject({
+      configurable: true,
+      enumerable: true,
+      set: undefined,
+    })
+    expect(desc?.get).not.toBe(undefined)
   })
 })

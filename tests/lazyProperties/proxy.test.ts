@@ -68,4 +68,27 @@ describe('makeProxy', () => {
     expect(proxy[PROXY_KEY]).toBe(undefined)
     expect(PROXY_KEY in proxy).toBe(false)
   })
+
+  it('defaults', () => {
+
+    const target = {
+      foo: 'bar',
+    }
+    const parent = {
+      name: 'susan'
+    }
+    const proxy = makeProxy(target, parent, 'parentProp')
+
+    expect(proxy.parent).toBe(parent)
+    expect(proxy.foo).toBe('bar')
+    expect(Object.keys(proxy)).toEqual([
+      'parent',
+      'foo'
+    ])
+    expect('parent' in proxy).toBe(true)
+    expect('foo' in proxy).toBe(true)
+
+    expect(proxy[PROXY_KEY]).toBe('undefined.parentProp')
+    expect(PROXY_KEY in proxy).toBe(true)
+  })
 })
