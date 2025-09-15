@@ -14,7 +14,5 @@ export function untrackLazyProp(item: Rec, prop: PropertyKey) {
   set.delete(prop)
   if (set.size === 0) {
     delete item[LAZY_PROPS]
-    return true
   }
-  return false
 }
