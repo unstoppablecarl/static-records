@@ -133,7 +133,7 @@ export function rawLazyFiller(
       get() {
         const newValue = resolver(
           makeProxy(target, parentProxy, prop, PARENT_TYPE, parentKey ),
-          makeProxy(root as Rec, undefined, rootProp, ROOT_TYPE),
+          makeProxy(root as Rec, undefined, rootProp, ROOT_TYPE, parentKey),
         )
 
         Object.defineProperty(target, prop, {
