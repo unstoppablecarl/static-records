@@ -90,7 +90,7 @@ export function rawLazyFiller(
         rootProp = rootProp ?? prop
         bindLazyProps(
           value,
-          makeProxy(target, parentProxy, prop, parentKey, PARENT_TYPE),
+          makeProxy(target, parentProxy, prop, PARENT_TYPE, parentKey),
           rootProp,
         )
       }
@@ -132,8 +132,8 @@ export function rawLazyFiller(
     Object.defineProperty(target, prop, {
       get() {
         const newValue = resolver(
-          makeProxy(target, parentProxy, prop, parentKey, PARENT_TYPE),
-          makeProxy(root as Rec, undefined, rootProp, undefined, ROOT_TYPE),
+          makeProxy(target, parentProxy, prop, PARENT_TYPE, parentKey ),
+          makeProxy(root as Rec, undefined, rootProp, ROOT_TYPE),
         )
 
         Object.defineProperty(target, prop, {
@@ -150,7 +150,7 @@ export function rawLazyFiller(
         if (validChild(newValue)) {
           bindLazyProps(
             newValue,
-            makeProxy(target, parentProxy, prop, parentKey, PARENT_TYPE),
+            makeProxy(target, parentProxy, prop, PARENT_TYPE, parentKey),
             rootProp,
           )
         }
@@ -180,7 +180,7 @@ export function rawLazyFiller(
     if (validChild(value)) {
       bindLazyProps(
         value,
-        makeProxy(target, parentProxy, prop, parentKey, PARENT_TYPE),
+        makeProxy(target, parentProxy, prop, PARENT_TYPE, parentKey ),
         rootProp,
       )
     }

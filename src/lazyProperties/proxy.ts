@@ -7,8 +7,8 @@ export function makeProxy<T extends Rec>(
   target: T,
   parent?: Rec,
   selfParentProp?: string | symbol,
+  proxyType?: string | undefined,
   parentKey: string | null = 'parent',
-  proxyType: string | undefined = undefined,
 ): HasParent {
   return new Proxy(target, {
     get(target: T, p: PropertyKey, receiver?: any): any {

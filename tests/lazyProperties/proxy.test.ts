@@ -7,9 +7,9 @@ describe('makeProxy', () => {
       foo: 'bar',
     }
     const parent = {
-      name: 'susan'
+      name: 'susan',
     }
-    const proxy = makeProxy(target, parent, 'parentProp', 'parentKey', 'something')
+    const proxy = makeProxy(target, parent, 'parentProp', 'something', 'parentKey')
 
     expect(proxy.parentKey).toBe(parent)
     expect(proxy.foo).toBe('bar')
@@ -29,9 +29,9 @@ describe('makeProxy', () => {
       foo: 'bar',
     }
     const parent = {
-      name: 'susan'
+      name: 'susan',
     }
-    const proxy = makeProxy(target, parent, 'parentProp', null, 'something')
+    const proxy = makeProxy(target, parent, 'parentProp', 'something', null)
 
     expect(proxy.parentKey).toBe(undefined)
     expect(proxy.foo).toBe('bar')
@@ -52,9 +52,9 @@ describe('makeProxy', () => {
       foo: 'bar',
     }
     const parent = {
-      name: 'susan'
+      name: 'susan',
     }
-    const proxy = makeProxy(target, parent, 'parentProp', 'parentKey', 'something')
+    const proxy = makeProxy(target, parent, 'parentProp', 'something', 'parentKey')
 
     expect(proxy.parentKey).toBe(parent)
     expect(proxy.foo).toBe('bar')
@@ -75,7 +75,7 @@ describe('makeProxy', () => {
       foo: 'bar',
     }
     const parent = {
-      name: 'susan'
+      name: 'susan',
     }
     const proxy = makeProxy(target, parent, 'parentProp')
 
@@ -83,7 +83,7 @@ describe('makeProxy', () => {
     expect(proxy.foo).toBe('bar')
     expect(Object.keys(proxy)).toEqual([
       'parent',
-      'foo'
+      'foo',
     ])
     expect('parent' in proxy).toBe(true)
     expect('foo' in proxy).toBe(true)
