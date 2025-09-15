@@ -87,11 +87,11 @@ export function rawLazyFiller(
     for (const prop of Reflect.ownKeys(target)) {
       const value = target[prop]
       if (validChild(value)) {
-        rootProp = rootProp ?? prop
+        const newRootProp = rootProp = rootProp ?? prop
         bindLazyProps(
           value,
           makeProxy(target, parentProxy, prop, PARENT_TYPE, parentKey),
-          rootProp,
+          newRootProp,
         )
       }
     }
