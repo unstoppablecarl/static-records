@@ -19,22 +19,15 @@ export function lazyFiller<
   rawLazyFiller(item, input, freezer, 'lazyFiller', false)
 }
 
-export type BoundTargetTracker = {
-  has(v: any): boolean,
-  add(v: any): void,
-}
-
 export function makeLazyFiller<
   ProtoItem extends HasId,
   Input extends Rec,
 >({
     freeze = false,
     parentKey = 'parent',
-    boundTargets = new WeakSet<any>() as BoundTargetTracker,
   }: {
   freeze?: boolean,
   parentKey?: string,
-  boundTargets?: BoundTargetTracker,
 } = {}): Filler<ProtoItem, Input> {
   return ((item: ProtoItem, input: Input, freezer: Freezer) => {
 
@@ -45,7 +38,6 @@ export function makeLazyFiller<
       'makeLazyFiller',
       freeze,
       parentKey,
-      boundTargets,
     )
   })
 }
@@ -62,14 +54,13 @@ export function rawLazyFiller(
   method: string,
   freeze: boolean,
   parentKey = 'parent',
-  boundTargets: BoundTargetTracker = new WeakSet<any>(),
 ) {
   if (freezer !== false) {
     throw new Error(`When using filler: ${method}, option.freeze must be false`)
   }
   Object.assign(item, input)
-
   const root = item
+  const boundTargets = new WeakSet<any>()
 
   bindLazyProps(item)
 
