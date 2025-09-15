@@ -64,10 +64,10 @@ describe('staticRecords() unit tests', async () => {
     // should be new object every time
     expect(VEHICLES.toObject()).not.toBe(first)
 
-    expect(Object.isFrozen(VEHICLES.toObject())).toBe(false)
+    expect(VEHICLES.toObject()).toBeFrozen(false)
 
     Object.values(VEHICLES.toObject()).forEach(item => {
-      expect(Object.isFrozen(item)).toBe(true)
+      expect(item).toBeFrozen(true)
     })
   })
 

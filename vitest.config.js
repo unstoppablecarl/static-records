@@ -10,6 +10,7 @@ export default defineConfig({
     include: ['tests/**/*.test.ts'],
     setupFiles: [
       fileURLToPath(new URL('./tests/vitest-setup.ts', import.meta.url)),
+      fileURLToPath(new URL('./tests/_helpers/assertions.ts', import.meta.url)),
     ],
     environment: 'happy-dom',
     typecheck: {
@@ -21,6 +22,8 @@ export default defineConfig({
       ],
     },
     mockReset: true,
+    clearMocks: true,
+    restoreMocks: true,
     coverage: {
       enabled: true,
       provider: 'v8',

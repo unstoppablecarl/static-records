@@ -77,7 +77,7 @@ describe('makeProxy', () => {
     const parent = {
       name: 'susan',
     }
-    const proxy = makeProxy(target, parent, 'parentProp')
+    const proxy = makeProxy(target, parent, 'parentProp', 'proxyType', 'parent')
 
     expect(proxy.parent).toBe(parent)
     expect(proxy.foo).toBe('bar')
@@ -88,7 +88,7 @@ describe('makeProxy', () => {
     expect('parent' in proxy).toBe(true)
     expect('foo' in proxy).toBe(true)
 
-    expect(proxy[PROXY_KEY]).toBe('undefined.parentProp')
+    expect(proxy[PROXY_KEY]).toBe('proxyType.parentProp')
     expect(PROXY_KEY in proxy).toBe(true)
   })
 })

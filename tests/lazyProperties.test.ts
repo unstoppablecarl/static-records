@@ -33,13 +33,14 @@ describe('lazyProperties', async () => {
       false,
       0,
       '',
-      {}
+      {},
+      () => {
+      },
     ]
 
     values.forEach((v) => {
       expect(isLazyResolver(v)).toBe(false)
     })
-
   })
 
   it('hasLazyResolvers()', async () => {

@@ -23,9 +23,9 @@ describe('staticTypeFactory() tests', async () => {
       const { CAR, VAN } = defineAndLockVehicles<Vehicle>(VEHICLES)
 
       expect(CAR.tested).toBe('freezer')
-      expect(Object.isFrozen(CAR)).toBe(false)
+      expect(CAR).toBeFrozen(false)
       expect(VAN.tested).toBe('freezer')
-      expect(Object.isFrozen(VAN)).toBe(false)
+      expect(VAN).toBeFrozen(false)
     })
 
     it('factory options.freezer = false', async () => {
@@ -34,9 +34,9 @@ describe('staticTypeFactory() tests', async () => {
       })
       const { CAR, VAN } = defineAndLockVehicles<Vehicle>(VEHICLES2)
       expect(CAR.tested).toBe(undefined)
-      expect(Object.isFrozen(CAR)).toBe(false)
+      expect(CAR).toBeFrozen(false)
       expect(VAN.tested).toBe(undefined)
-      expect(Object.isFrozen(VAN)).toBe(false)
+      expect(VAN).toBeFrozen(false)
     })
   })
 

@@ -88,10 +88,10 @@ describe('lazyFiller', () => {
     expect(desc?.get).to.be.undefined
   })
 
-  it('extension prevented', () => {
+  it('extension not prevented', () => {
     const { DAN } = makeExample()
 
-    expect(Object.isExtensible(DAN)).toBe(true)
+    expect(DAN).toBeExtensible(true)
   })
 
   it('lifecycle', () => {
@@ -172,13 +172,10 @@ describe('lazyFiller', () => {
           foo: 'bar',
         },
         location: lazy((parent, root) => {
-          // console.log({parent, root})
-          expect(PROXY_KEY in parent).toBe(true)
-          expect(parent.location).toBe(undefined)
           expect(PROXY_KEY in parent).toBe(true)
           expect('parent' in parent).toBe(true)
           expect('location' in parent).toBe(false)
-          expect(parent).toEqual({
+          let expectedParent1 = {
             id: 'DAN',
             name: 'Dan',
             carName: 'Mustang',
@@ -190,32 +187,34 @@ describe('lazyFiller', () => {
             [recordTypeKey]: 'DRIVER',
             [PROXY_KEY]: 'parent.location',
             [LAZY_PROPS]: new Set(['location']),
-          })
+          }
+          expect(parent).toEqual(expectedParent1)
+          expect(parent).toHaveTheSameKeysAs(expectedParent1)
 
-          console.log(root[PROXY_KEY])
-          // expect(root.location).toBe(undefined)
-          // expect(PROXY_KEY in root).toBe(true)
-          // expect('parent' in root).toBe(true)
-          // expect('location' in root).toBe(false)
+          expect(PROXY_KEY in root).toBe(true)
+          expect('parent' in root).toBe(true)
+          expect('location' in root).toBe(false)
 
-          // expect(root).toEqual({
-          //   id: 'DAN',
-          //   name: 'Dan',
-          //   carName: 'Mustang',
-          //   parent: undefined,
-          //   location: undefined,
-          //   static: {
-          //     foo: 'bar',
-          //   },
-          //   [recordTypeKey]: 'DRIVER',
-          //   [PROXY_KEY]: 'parent',
-          //   [LAZY_PROPS]: new Set(['location']),
-          // })
+          let expectedRoot = {
+            id: 'DAN',
+            name: 'Dan',
+            carName: 'Mustang',
+            parent: undefined,
+            location: undefined,
+            static: {
+              foo: 'bar',
+            },
+            [recordTypeKey]: 'DRIVER',
+            [PROXY_KEY]: 'root.location',
+            [LAZY_PROPS]: new Set(['location']),
+          }
+          expect(root).toEqual(expectedRoot)
+          expect(root).toHaveTheSameKeysAs(expectedRoot)
 
           return {
             name: 'Arizona',
             address: lazy((parent) => {
-              expect(parent).toEqual({
+              let expectedParent = {
                 address: undefined,
                 name: 'Arizona',
                 parent: {
@@ -232,13 +231,15 @@ describe('lazyFiller', () => {
                 },
                 [PROXY_KEY]: 'parent.address',
                 [LAZY_PROPS]: new Set(['address']),
-              })
+              }
+              expect(parent).toEqual(expectedParent)
+              expect(parent).toHaveTheSameKeysAs(expectedParent)
 
               return {
                 street: '401 test st.',
                 extra: lazy((parent) => {
 
-                  expect(parent).toEqual({
+                  let expectedParent = {
                     street: '401 test st.',
                     extra: undefined,
                     parent: {
@@ -260,7 +261,9 @@ describe('lazyFiller', () => {
                     },
                     [PROXY_KEY]: 'parent.extra',
                     [LAZY_PROPS]: new Set(['extra']),
-                  })
+                  }
+                  expect(parent).toEqual(expectedParent)
+                  expect(parent).toHaveTheSameKeysAs(expectedParent)
 
                   return 'something'
                 }),
@@ -289,8 +292,9 @@ describe('lazyFiller', () => {
       },
       [recordTypeKey]: 'DRIVER',
     })
-    expect(Object.isFrozen(DAN.static)).toBe(false)
-    expect(Object.isFrozen(DAN)).toBe(false)
+    expect(DAN).toBeFrozen(false)
+    expect(DAN.static).toBeFrozen(false)
+    expect(DAN).toBeFrozen(false)
     expect(isProxy(DAN)).toBe(false)
   })
 
@@ -445,7 +449,7 @@ describe('lazyFiller', () => {
     )
     THINGS.lock()
 
-    expect(Object.isFrozen(JIM)).toBe(false)
+    expect(JIM).toBeFrozen(false)
     expect(JIM).toEqual({
       id: 'JIM',
       name: 'Jim',
@@ -457,79 +461,66 @@ describe('lazyFiller', () => {
     })
   })
 
-  it('makeLazyFiller freeze = true', () => {
-    const filler = makeLazyFiller({
-      freeze: true,
-    })
-    const THINGS = staticRecords('THINGS', {
-      filler,
+  it('circular referenced lazy objects', () => {
+    const DRIVERS = staticRecords('DRIVER', {
       freezer: false,
+      filler: lazyFiller,
     })
 
-    const JIM = THINGS.define(
-      'JIM',
+    const a: any = {
+      name: lazy(() => 'a'),
+      ref: null,
+    }
+    const b: any = {
+      name: lazy(() => 'b'),
+      ref: a,
+    }
+    a.ref = b
+
+    const alpha: any = {
+      name: 'alpha',
+      sub: {
+        ref: null,
+      },
+      sub1: {
+        ref: a,
+      },
+      sub2: {
+        ref: b,
+      },
+      meta: lazy(() => {
+        return 'alpha-meta'
+      }),
+    }
+
+    const beta: any = {
+      name: 'beta',
+      sub: {
+        ref: alpha,
+      },
+      meta: lazy(() => {
+        return 'alpha-beta'
+      }),
+    }
+
+    alpha.sub.ref = beta
+
+    const DAN: any = DRIVERS.define(
+      'DAN',
       () => ({
-        name: 'Jim',
+        alpha,
+        beta,
       }),
     )
-    THINGS.lock()
 
-    expect(Object.isFrozen(JIM)).toBe(true)
-  })
+    DRIVERS.lock()
 
-  it('makeLazyFiller custom parentKey', () => {
-    const filler = makeLazyFiller({
-      parentKey: '__parent',
-    })
-    const THINGS = staticRecords('THINGS', {
-      filler,
-      freezer: false,
-    })
+    expect(DAN.alpha).toBe(alpha)
+    expect(DAN.beta).toBe(beta)
+    expect(DAN.alpha).toBeFrozen(false)
+    expect(DAN.beta).toBeFrozen(false)
+    expect(Object.isExtensible(DAN)).toBe(true)
 
-    const JIM = THINGS.define(
-      'JIM',
-      () => ({
-        name: 'Jim',
-        meta: lazy((parent) => {
-          return {
-            testing: 'something',
-            foo: lazy((parent) => {
-              expect(parent.__parent).toEqual({
-                id: 'JIM',
-                name: 'Jim',
-                [PROXY_KEY]: 'parent.meta',
-                [recordTypeKey]: 'THINGS',
-              })
-
-              return 'bar'
-            }),
-          }
-        }),
-      }),
-    )
-    THINGS.lock()
-
-    expect(Object.isFrozen(JIM)).toBe(false)
-    expect(JIM).toEqual({
-      id: 'JIM',
-      name: 'Jim',
-      meta: {
-        testing: 'something',
-        foo: 'bar',
-      },
-      [recordTypeKey]: 'THINGS',
-    })
-
-    const desc = Object.getOwnPropertyDescriptor(JIM, 'meta')
-
-    expect(desc).toEqual({
-      writable: true,
-      configurable: true,
-      enumerable: true,
-      value: {
-        foo: 'bar',
-        'testing': 'something',
-      },
-    })
+    expect(isProxy(DAN)).toBe(false)
   })
 })

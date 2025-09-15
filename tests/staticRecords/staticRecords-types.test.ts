@@ -32,7 +32,7 @@ describe('staticRecords() types', async () => {
       expectTypeOf<InputReturnValue>().toMatchObjectType<{
         name: string,
         id?: never,
-        // [recordTypeKey]?: never
+        [recordTypeKey]?: never
       }>()
     })
   })

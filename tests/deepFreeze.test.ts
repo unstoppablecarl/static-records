@@ -54,24 +54,24 @@ describe('deepFreeze() unit tests', async () => {
   deepFreeze(obj)
 
   it('freezable types', async () => {
-    expect(Object.isFrozen(obj)).toBe(true)
-    expect(Object.isFrozen(child1)).toBe(true)
-    expect(Object.isFrozen(child2)).toBe(true)
-    expect(Object.isFrozen(grandChild)).toBe(true)
-    expect(Object.isFrozen(func)).toBe(true)
-    expect(Object.isFrozen(closure)).toBe(true)
-    expect(Object.isFrozen(arrItem1)).toBe(true)
-    expect(Object.isFrozen(arrItem2)).toBe(true)
+    expect(obj).toBeFrozen(true)
+    expect(child1).toBeFrozen(true)
+    expect(child2).toBeFrozen(true)
+    expect(grandChild).toBeFrozen(true)
+    expect(func).toBeFrozen(true)
+    expect(closure).toBeFrozen(true)
+    expect(arrItem1).toBeFrozen(true)
+    expect(arrItem2).toBeFrozen(true)
   })
 
   it('ignores child objects with [recordTypeKey]', async () => {
-    expect(Object.isFrozen(otherRecord)).toBe(false)
-    expect(Object.isFrozen(otherRecord.child)).toBe(false)
+    expect(otherRecord).toBeFrozen(false)
+    expect(otherRecord.child).toBeFrozen(false)
   })
 
   it('circular reference', async () => {
-    expect(Object.isFrozen(child1)).toBe(true)
-    expect(Object.isFrozen(child2)).toBe(true)
-    expect(Object.isFrozen(child1.grandChild)).toBe(true)
+    expect(child1).toBeFrozen(true)
+    expect(child2).toBeFrozen(true)
+    expect(child1.grandChild).toBeFrozen(true)
   })
 })
