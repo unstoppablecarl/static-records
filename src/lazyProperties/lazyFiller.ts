@@ -19,18 +19,34 @@ export function lazyFiller<
   rawLazyFiller(item, input, freezer, 'lazyFiller', false)
 }
 
+export type BoundTargetTracker = {
+  has(v: any): boolean,
+  add(v: any): void,
+}
+
 export function makeLazyFiller<
   ProtoItem extends HasId,
   Input extends Rec,
 >({
     freeze = false,
     parentKey = 'parent',
+    boundTargets = new WeakSet<any>() as BoundTargetTracker,
   }: {
   freeze?: boolean,
-  parentKey?: string
+  parentKey?: string,
+  boundTargets?: BoundTargetTracker,
 } = {}): Filler<ProtoItem, Input> {
   return ((item: ProtoItem, input: Input, freezer: Freezer) => {
-    rawLazyFiller(item, input, freezer, 'makeLazyFiller', freeze, parentKey)
+
+    rawLazyFiller(
+      item,
+      input,
+      freezer,
+      'makeLazyFiller',
+      freeze,
+      parentKey,
+      boundTargets,
+    )
   })
 }
 
@@ -46,6 +62,7 @@ export function rawLazyFiller(
   method: string,
   freeze: boolean,
   parentKey = 'parent',
+  boundTargets: BoundTargetTracker = new WeakSet<any>(),
 ) {
   if (freezer !== false) {
     throw new Error(`When using filler: ${method}, option.freeze must be false`)
@@ -53,7 +70,6 @@ export function rawLazyFiller(
   Object.assign(item, input)
 
   const root = item
-  const visited: WeakSet<any> = new WeakSet<any>()
 
   bindLazyProps(item)
 
@@ -62,17 +78,16 @@ export function rawLazyFiller(
     parentProxy?: HasParent,
     rootProp?: string | symbol,
   ) {
-    if (visited.has(target)) return
-    visited.add(target)
-
-    const hasLazy = hasLazyResolvers(target)
-
-    if (!hasLazy) {
-      processNonLazyObject(target, parentProxy, rootProp)
+    if (boundTargets.has(target)) {
       return
     }
+    boundTargets.add(target)
 
-    processLazyObject(target, parentProxy, rootProp)
+    if (hasLazyResolvers(target)) {
+      processLazyObject(target, parentProxy, rootProp)
+      return
+    }
+    processNonLazyObject(target, parentProxy, rootProp)
   }
 
   function processNonLazyObject(
@@ -132,7 +147,7 @@ export function rawLazyFiller(
     Object.defineProperty(target, prop, {
       get() {
         const newValue = resolver(
-          makeProxy(target, parentProxy, prop, PARENT_TYPE, parentKey ),
+          makeProxy(target, parentProxy, prop, PARENT_TYPE, parentKey),
           makeProxy(root as Rec, undefined, rootProp, ROOT_TYPE, parentKey),
         )
 
@@ -180,7 +195,7 @@ export function rawLazyFiller(
     if (validChild(value)) {
       bindLazyProps(
         value,
-        makeProxy(target, parentProxy, prop, PARENT_TYPE, parentKey ),
+        makeProxy(target, parentProxy, prop, PARENT_TYPE, parentKey),
         rootProp,
       )
     }
