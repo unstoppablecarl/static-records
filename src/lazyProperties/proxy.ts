@@ -49,11 +49,13 @@ export function makeProxy<T extends Rec>(
         }
       }
       if (p === selfParentProp) {
+        const desc = Reflect.getOwnPropertyDescriptor(target, p)
+
         return {
-          configurable,
-          enumerable,
+          configurable: desc?.configurable ?? configurable,
+          enumerable: desc?.enumerable ?? enumerable,
           value: undefined,
-          writable,
+          writable: desc?.writable ?? writable,
         }
       }
       if (__DEV__ && p === PROXY_KEY) {
@@ -72,7 +74,7 @@ export function makeProxy<T extends Rec>(
       return [
         ...parentKey ? [parentKey] : [],
         ...__DEV__ ? [PROXY_KEY] : [],
-        ...keys.filter((key) => key !== selfParentProp),
+        ...Reflect.ownKeys(target),
       ]
     },
   }) as HasParent
