@@ -51,7 +51,7 @@ export function makeProxy<T extends Rec>(
       if (p === selfParentProp) {
         return {
           configurable,
-          enumerable: true,
+          enumerable,
           value: undefined,
           writable,
         }
@@ -60,7 +60,7 @@ export function makeProxy<T extends Rec>(
         return {
           configurable,
           enumerable,
-          value: true,
+          value: proxyType + '.' + String(selfParentProp),
           writable,
         }
       }
