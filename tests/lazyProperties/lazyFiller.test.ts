@@ -173,7 +173,7 @@ describe('lazyFiller', () => {
         },
         location: lazy((parent, root) => {
           expect(PROXY_KEY in parent).toBe(true)
-          // expect('parent' in parent).toBe(true)
+          expect('parent' in parent).toBe(true)
           expect('location' in parent).toBe(false)
           let expectedParent1 = {
             id: 'DAN',
@@ -192,7 +192,7 @@ describe('lazyFiller', () => {
           expect(parent).toHaveTheSameKeysAs(expectedParent1)
 
           expect(PROXY_KEY in root).toBe(true)
-          // expect('parent' in root).toBe(true)
+          expect('parent' in root).toBe(true)
           expect('location' in root).toBe(false)
 
           let expectedRoot = {
