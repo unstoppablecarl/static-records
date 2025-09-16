@@ -17,7 +17,7 @@ export function deepFreeze(obj: Rec) {
       // they will be frozen by their own lock() function
       !isStaticRecord(value)
     ) {
-      deepFreeze(value)
+      deepFreeze(value as Rec)
     }
   }
 }

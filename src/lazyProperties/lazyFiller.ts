@@ -42,7 +42,9 @@ export function makeLazyFiller<
   })
 }
 
-const validChild = (v: any) => !Object.isFrozen(v) && !isStaticRecord(v)
+const validChild = (v: unknown): v is Rec => {
+  return typeof v === 'object' && v !== null && !isStaticRecord(v)
+}
 
 const PARENT_TYPE = 'parent'
 const ROOT_TYPE = 'root'

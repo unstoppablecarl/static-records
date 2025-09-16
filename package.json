@@ -42,6 +42,7 @@
     "build": "tsup",
     "test": "vitest --coverage",
     "test:mutation": "stryker run",
+    "test:gc": "vitest --config tests/_helpers/vitest.gc-config.ts",
     "readme": "tsx ./readme/generate-readme-code.ts",
     "size": "npm run build && size-limit"
   },

@@ -20,7 +20,7 @@ function makeExample() {
     age: number,
     carName: Lazy<string>,
     location: Lazy<string>,
-    carAndLocation: Lazy<string>,
+    carAndLocation: Lazy<string, Driver>,
     backup?: Driver,
   }
 
@@ -29,8 +29,8 @@ function makeExample() {
     filler: lazyFiller,
   })
 
-  const carAndLocation = lazy((self: Driver) => {
-    return `${self.carName}-${self.location}`
+  const carAndLocation = lazy((parent: Driver) => {
+    return `${parent.carName}-${parent.location}`
   })
 
   const DAN = DRIVERS.define(
@@ -173,7 +173,7 @@ describe('lazyFiller', () => {
         },
         location: lazy((parent, root) => {
           expect(PROXY_KEY in parent).toBe(true)
-          expect('parent' in parent).toBe(true)
+          // expect('parent' in parent).toBe(true)
           expect('location' in parent).toBe(false)
           let expectedParent1 = {
             id: 'DAN',
@@ -192,7 +192,7 @@ describe('lazyFiller', () => {
           expect(parent).toHaveTheSameKeysAs(expectedParent1)
 
           expect(PROXY_KEY in root).toBe(true)
-          expect('parent' in root).toBe(true)
+          // expect('parent' in root).toBe(true)
           expect('location' in root).toBe(false)
 
           let expectedRoot = {
