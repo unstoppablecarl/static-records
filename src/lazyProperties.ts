@@ -26,8 +26,6 @@ export function lazy<T = any>(resolver: LazyResolverFunction<T>) {
   return Object.assign(resolver, { [LAZY_RESOLVER]: LazyResolverType.DEFAULT }) as LazyResolver<T>
 }
 
-// lazy.tree = lazyTree
-
 export function isAnyLazyResolver<T>(
   value: unknown,
 ): value is LazyResolver<T> {
@@ -36,7 +34,7 @@ export function isAnyLazyResolver<T>(
 
 export function isLazyDefaultResolver<T>(
   value: unknown,
-): value is LazyTreeResolver<T> {
+): value is LazyResolver<T> {
   return typeof value === 'function' && (value as any)[LAZY_RESOLVER] === LazyResolverType.DEFAULT
 }
 
@@ -46,14 +44,7 @@ export function isLazyTreeResolver<T>(
   return typeof value === 'function' && (value as any)[LAZY_RESOLVER] === LazyResolverType.TREE
 }
 
-export function getLazyResolverType(target: unknown): LazyResolverType | undefined {
-  if (typeof target !== 'function') {
-    return undefined
-  }
-  return (target as any)[LAZY_RESOLVER]
-}
-
-export function hasLazyResolvers(target: Rec): boolean {
+export function hasAnyLazyResolvers(target: Rec): boolean {
   return !!Object.values(target).find(isAnyLazyResolver)
 }
 

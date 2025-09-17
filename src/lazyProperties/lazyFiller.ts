@@ -1,6 +1,6 @@
 import { type HasId, isStaticRecord } from '../recordType'
 import type { Rec } from '../type-util'
-import { hasLazyResolvers, type HasParent, isAnyLazyResolver } from '../lazyProperties'
+import { hasAnyLazyResolvers, type HasParent, isAnyLazyResolver } from '../lazyProperties'
 import type { Filler } from '../staticRecords'
 import { makeProxy } from './proxy'
 import { trackLazyProp, untrackLazyProp } from './trackLazyProps'
@@ -43,7 +43,7 @@ export function makeLazyFiller<
       }
       boundTargets.add(target)
 
-      if (hasLazyResolvers(target)) {
+      if (hasAnyLazyResolvers(target)) {
         processLazyObject(target, parentProxy, rootProp)
         return
       }
