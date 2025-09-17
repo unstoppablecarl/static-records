@@ -23,12 +23,12 @@ export type Lazy<
 > = LazyResolver<T> | LazyTreeResolver<T, Parent, Root> | T
 
 export function lazy<T = any>(resolver: LazyResolverFunction<T>) {
-  return Object.assign(resolver, { [LAZY_RESOLVER]: LazyResolverType.DEFAULT }) as LazyResolver<T>
+  return Object.assign(resolver, { [LAZY_RESOLVER]: LazyResolverType.DEFAULT }) as LazyResolver<T> | T
 }
 
 export function isAnyLazyResolver<T>(
   value: unknown,
-): value is LazyResolver<T> {
+): value is LazyResolver<T> | LazyTreeResolver<T> {
   return typeof value === 'function' && (value as any)[LAZY_RESOLVER] !== undefined
 }
 
@@ -82,6 +82,6 @@ export function lazyTree<
   T = any,
   Parent extends HasParent | undefined = HasParent | undefined,
   Root extends HasParent | undefined = HasParent | undefined,
->(resolver: LazyTreeResolverFunction<T, Parent, Root>): LazyTreeResolver<T, Parent, Root> {
-  return Object.assign(resolver, { [LAZY_RESOLVER]: LazyResolverType.TREE }) as LazyTreeResolver<T, Parent, Root>
+>(resolver: LazyTreeResolverFunction<T, Parent, Root>) {
+  return Object.assign(resolver, { [LAZY_RESOLVER]: LazyResolverType.TREE }) as LazyTreeResolver<T, Parent, Root> | T
 }

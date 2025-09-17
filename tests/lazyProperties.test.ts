@@ -2,11 +2,15 @@ import { describe, expect, expectTypeOf, it } from 'vitest'
 import {
   hasAnyLazyResolvers,
   type HasParent,
-  isAnyLazyResolver, isLazyDefaultResolver, isLazyTreeResolver,
+  isAnyLazyResolver,
+  isLazyDefaultResolver,
+  isLazyTreeResolver,
   lazy,
-  LAZY_RESOLVER, type LazyResolver,
+  LAZY_RESOLVER,
+  type LazyResolver,
   LazyResolverType,
-  lazyTree, type LazyTreeResolver,
+  lazyTree,
+  type LazyTreeResolver,
 } from '../src'
 
 const invalidValues = [
@@ -25,6 +29,7 @@ describe('lazyProperties', async () => {
     const target = lazy(() => ({
       foo: 'bar',
     }))
+    // @ts-expect-error
     expect(target[LAZY_RESOLVER]).toEqual(LazyResolverType.DEFAULT)
   })
 
@@ -47,6 +52,7 @@ describe('lazyProperties', async () => {
     const target = lazyTree(() => ({
       foo: 'bar',
     }))
+    // @ts-expect-error
     expect(target[LAZY_RESOLVER]).toEqual(LazyResolverType.TREE)
   })
 
@@ -99,7 +105,7 @@ describe('lazyProperties', async () => {
         return 'foo'
       })
 
-      expectTypeOf(target).toEqualTypeOf<LazyResolver<string>>()
+      expectTypeOf(target).toEqualTypeOf<LazyResolver<string> | string>()
     })
 
     it('lazy() provided generics', async () => {
@@ -113,7 +119,7 @@ describe('lazyProperties', async () => {
         }
       })
 
-      expectTypeOf<ReturnType<typeof target>>().toEqualTypeOf<Input>()
+      expectTypeOf<typeof target>().toEqualTypeOf<Input | LazyResolver<Input>>()
     })
   })
 
@@ -126,7 +132,7 @@ describe('lazyProperties', async () => {
         return 'foo'
       })
 
-      expectTypeOf(target).toEqualTypeOf<LazyTreeResolver<string>>()
+      expectTypeOf(target).toEqualTypeOf<LazyTreeResolver<string> | string>()
     })
 
     it('lazyTree() provided generics', async () => {
@@ -149,7 +155,7 @@ describe('lazyProperties', async () => {
         }
       })
 
-      expectTypeOf<ReturnType<typeof target>>().toEqualTypeOf<Input>()
+      expectTypeOf<typeof target>().toEqualTypeOf<Input | LazyTreeResolver<Input, Parent, Root>>()
     })
   })
 })

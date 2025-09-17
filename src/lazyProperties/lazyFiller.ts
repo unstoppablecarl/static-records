@@ -1,6 +1,6 @@
 import { type HasId, isStaticRecord } from '../recordType'
 import type { Rec } from '../type-util'
-import { hasAnyLazyResolvers, type HasParent, isAnyLazyResolver } from '../lazyProperties'
+import { hasAnyLazyResolvers, type HasParent, isAnyLazyResolver, isLazyTreeResolver } from '../lazyProperties'
 import type { Filler } from '../staticRecords'
 import { makeProxy } from './proxy'
 import { trackLazyProp, untrackLazyProp } from './trackLazyProps'
@@ -18,9 +18,11 @@ export function makeLazyFiller<
 >({
     freeze = false,
     parentKey = 'parent',
+    lazyTree = true,
   }: {
   freeze?: boolean,
   parentKey?: string,
+  lazyTree?: boolean,
 } = {}): Filler<ProtoItem, Input> {
   return ((item: ProtoItem, input: Input) => {
 
@@ -30,61 +32,43 @@ export function makeLazyFiller<
     const boundTargets = new Set<any>()
 
     bindLazyProps(item)
-
     boundTargets.clear()
 
     function bindLazyProps(
       target: Rec,
       parentProxy?: HasParent,
-      rootProp?: string | symbol,
+      rootProxy?: HasParent,
     ) {
       if (boundTargets.has(target)) {
         return
       }
       boundTargets.add(target)
 
-      if (hasAnyLazyResolvers(target)) {
-        processLazyObject(target, parentProxy, rootProp)
-        return
-      }
-      processNonLazyObject(target, parentProxy, rootProp)
-    }
-
-    function processNonLazyObject(
-      target: Rec,
-      parentProxy?: HasParent,
-      rootProp?: string | symbol,
-    ) {
-      if (freeze) {
+      let hasLazy = hasAnyLazyResolvers(target)
+      if (!hasLazy && freeze) {
         Object.freeze(target)
       }
 
       for (const prop of Reflect.ownKeys(target)) {
         const value = target[prop]
+
+        let newRootProxy = rootProxy ?? makeProxy(root as Rec, undefined, prop, ROOT_TYPE, parentKey)
+
+        if (hasLazy) {
+          if (isAnyLazyResolver(value)) {
+            setupLazyProperty(target, prop, newRootProxy, value, parentProxy)
+          } else {
+            processNonLazyProperty(target, prop, newRootProxy, value, parentProxy)
+          }
+          continue
+        }
+        // non-lazy
         if (validChild(value)) {
-          const newRootProp = rootProp = rootProp ?? prop
           bindLazyProps(
             value,
             makeProxy(target, parentProxy, prop, PARENT_TYPE, parentKey),
-            newRootProp,
+            rootProxy,
           )
-        }
-      }
-    }
-
-    function processLazyObject(
-      target: Rec,
-      parentProxy?: HasParent,
-      rootProp?: string | symbol,
-    ) {
-      for (const prop of Reflect.ownKeys(target)) {
-        const value = target[prop]
-
-        const newRootProp = rootProp ?? prop
-        if (isAnyLazyResolver(value)) {
-          setupLazyProperty(target, prop, newRootProp, value, parentProxy)
-        } else {
-          processNonLazyProperty(target, prop, newRootProp, value, parentProxy)
         }
       }
     }
@@ -92,7 +76,7 @@ export function makeLazyFiller<
     function setupLazyProperty(
       target: Rec,
       prop: string | symbol,
-      rootProp: string | symbol,
+      rootProxy: HasParent,
       resolver: Function,
       parentProxy?: HasParent,
     ) {
@@ -102,10 +86,15 @@ export function makeLazyFiller<
 
       Object.defineProperty(target, prop, {
         get() {
-          const newValue = resolver(
-            makeProxy(target, parentProxy, prop, PARENT_TYPE, parentKey),
-            makeProxy(root as Rec, undefined, rootProp, ROOT_TYPE, parentKey),
-          )
+          let newValue
+          if (lazyTree && isLazyTreeResolver(resolver)) {
+            newValue = resolver(
+              makeProxy(target, parentProxy, prop, PARENT_TYPE, parentKey),
+              rootProxy,
+            )
+          } else {
+            newValue = resolver()
+          }
 
           Object.defineProperty(target, prop, {
             value: newValue,
@@ -122,7 +111,7 @@ export function makeLazyFiller<
             bindLazyProps(
               newValue,
               makeProxy(target, parentProxy, prop, PARENT_TYPE, parentKey),
-              rootProp,
+              rootProxy,
             )
           }
 
@@ -135,7 +124,7 @@ export function makeLazyFiller<
     function processNonLazyProperty(
       target: Rec,
       prop: string | symbol,
-      rootProp: string | symbol,
+      rootProxy: HasParent | undefined,
       value: any,
       parentProxy?: HasParent,
     ) {
@@ -152,7 +141,7 @@ export function makeLazyFiller<
         bindLazyProps(
           value,
           makeProxy(target, parentProxy, prop, PARENT_TYPE, parentKey),
-          rootProp,
+          rootProxy,
         )
       }
     }

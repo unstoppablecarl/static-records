@@ -6,6 +6,8 @@ import { TESTS as defaultValues } from '../readme/code/default-values'
 import { TESTS as factoryContactTests } from '../readme/code/static-records-factory-contacts'
 import { TESTS as factoryTests } from '../readme/code/static-records-factory'
 import { TESTS as factoryAdvancedTests } from '../readme/code/static-records-factory-advanced'
+import { TESTS as lazyProps } from '../readme/code/lazy-props'
+import { TESTS as lazyPropsCircular } from '../readme/code/lazy-props-circular'
 
 import type { TestCase } from '../readme/types'
 
@@ -31,7 +33,12 @@ describe('readme tests', async () => {
   describe('static-records-factory-advanced.ts', async () => {
     runTests(factoryAdvancedTests)
   })
-
+  describe('lazy-props.ts', async () => {
+    runTests(lazyProps)
+  })
+  describe('lazy-props-circular.ts', async () => {
+    runTests(lazyPropsCircular)
+  })
 })
 
 function runTests(tests: TestCase[]) {

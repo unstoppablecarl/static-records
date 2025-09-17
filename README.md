@@ -60,10 +60,10 @@ import { staticRecords } from 'static-records'
 import { JIM, type Person, SUE } from './person-data'
 
 export type Vehicle = {
-readonly id: string,
-readonly name: string,
-readonly driver: Person,
-readonly passengers?: Person[],
+  readonly id: string,
+  readonly name: string,
+  readonly driver: Person,
+  readonly passengers?: Person[],
 }
 
 export const VEHICLES = staticRecords<Vehicle>(/* Record Type Name: */ 'Vehicle')
@@ -317,7 +317,7 @@ function makeSeller(item: Seller, input: {
 }): SellerInput {
   const {
     firstName,
-    lastName
+    lastName,
   } = item
 
   return {
@@ -350,16 +350,22 @@ SAM instanceof Seller // true
 ### Advanced Types
 <!-- doc-gen CODE src="./readme/code/creator-and-filler-options-advanced.ts" -->
 ```ts
-import { recordTypeKey, staticRecords } from 'static-records'
+import { type DefaultProtoItem, recordTypeKey, staticRecords } from 'static-records'
+
+/*
+the above imported type that is the base of all proto objects
+type DefaultProtoItem = {
+  readonly id: string,
+  readonly [recordTypeKey]: string,
+}
+*/
 
 type Widget = {
   readonly id: string,
   readonly name: string
 }
 
-type ProtoWidget = {
-  readonly id: string,
-  readonly [recordTypeKey]: string,
+type ProtoWidget = DefaultProtoItem & {
   readonly something: string,
 }
 
@@ -512,6 +518,77 @@ TOWER_A.id // 'TOWER_A'
 TOWER_A.name // 'Tower A'
 TOWER_A.uid // 'Building-TOWER_A'
 TOWER_A.zone // 'Alpha'
+```
+<!-- end-doc-gen -->
+
+### Lazy Resolvers
+`makeLazyFiller()` creates a filler that can have properties resolve when they are first read.
+
+<!-- doc-gen CODE src="./readme/code/lazy-props.ts" test=true -->
+```ts
+import { lazy, makeLazyFiller, staticRecords } from 'static-records'
+
+type ArmorVariant = {
+  readonly id: string,
+  readonly name: string,
+  readonly stat: number,
+  readonly fireResistance: number,
+}
+
+const ARMOR_VARIANTS = staticRecords<ArmorVariant>('ArmorVariant', {
+  filler: makeLazyFiller(),
+})
+
+const FIRE_RESISTANT = ARMOR_VARIANTS.define(
+  'FIRE_RESISTANT',
+  () => ({
+    name: 'Fire Resistant',
+    stat: 0,
+    fireResistance: 3,
+  }),
+)
+
+ARMOR_VARIANTS.lock()
+
+type Armor = {
+  readonly id: string,
+  readonly name: string,
+  readonly stat: number,
+  readonly fireResistance: number,
+}
+
+const ARMOR = staticRecords<Armor>('Armor', {
+  filler: makeLazyFiller(),
+})
+
+const FIRE_RESISTANT_LEATHER = ARMOR.define(
+  'FIRE_RESISTANT_LEATHER',
+  () => makeVariant(LEATHER, FIRE_RESISTANT),
+)
+
+const LEATHER = ARMOR.define(
+  'LEATHER',
+  () => ({
+    name: 'Leather',
+    stat: 1,
+    fireResistance: 1,
+  }),
+)
+
+ARMOR.lock()
+
+function makeVariant(armor: Armor, variant: ArmorVariant) {
+  return {
+    name: lazy(() => `${variant.name} ${armor.name}`) as string,
+    stat: lazy(() => armor.stat + variant.stat) as number,
+    fireResistance: lazy(() => armor.fireResistance + variant.fireResistance) as number,
+  }
+}
+
+FIRE_RESISTANT_LEATHER.id // 'FIRE_RESISTANT_LEATHER'
+FIRE_RESISTANT_LEATHER.name // 'Fire Resistant Leather'
+FIRE_RESISTANT_LEATHER.stat // 1
+FIRE_RESISTANT_LEATHER.stat // 4
 ```
 <!-- end-doc-gen -->
 
