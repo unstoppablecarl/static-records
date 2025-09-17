@@ -1,7 +1,7 @@
 {
   "name": "static-records",
   "type": "module",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "packageManager": "pnpm@10.16.0",
   "description": "Static immutable relational data for js",
   "author": {
@@ -13,22 +13,24 @@
     "static",
     "data"
   ],
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.js",
+  "main": "./dist/index.prod.cjs",
+  "module": "./dist/index.prod.js",
   "source": "./src/index.ts",
-  "types": "./dist/index.d.ts",
+  "types": "./dist/index.prod.d.ts",
   "exports": {
     ".": {
       "source": "./src/index.ts",
-      "types": "./dist/index.d.ts",
-      "require": {
-        "types": "./dist/index.d.cts",
-        "default": "./dist/index.cjs"
+      "types": "./dist/index.prod.d.ts",
+      "development": {
+        "require": "./dist/index.dev.cjs",
+        "import": "./dist/index.dev.js"
       },
-      "import": {
-        "types": "./dist/index.d.ts",
-        "default": "./dist/index.js"
-      }
+      "production": {
+        "require": "./dist/index.prod.cjs",
+        "import": "./dist/index.prod.js"
+      },
+      "require": "./dist/index.prod.cjs",
+      "import": "./dist/index.prod.js"
     }
   },
   "files": [

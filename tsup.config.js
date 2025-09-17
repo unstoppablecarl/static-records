@@ -1,12 +1,46 @@
 import { defineConfig } from 'tsup'
+
+const defaultConfig = {
+  sourcemap: true,
+  clean: true,
+  format: ['cjs', 'esm'],
+}
+
+const DEV = {
+  ...defaultConfig,
+  entry: {
+    'index.dev': 'src/index.ts',
+  },
+  define: {
+    __DEV__: 'true',
+  },
+}
+
+const PROD = {
+  ...defaultConfig,
+  entry: {
+    'index.prod': 'src/index.ts',
+  },
+  define: {
+    __DEV__: 'false',
+  },
+}
 export default defineConfig([
   {
+    ...DEV,
+    format: 'esm',
+  },
+  {
+    ...DEV,
+    format: 'cjs',
+  },
+  {
+    ...PROD,
+    format: 'esm',
     dts: true,
-    sourcemap: true,
-    clean: true,
-    entry: ['src/index.ts'],
-    format: ['cjs', 'esm'],
-    define: {
-    },
+  },
+  {
+    ...PROD,
+    format: 'cjs',
   },
 ])
