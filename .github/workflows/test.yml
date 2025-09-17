@@ -21,6 +21,8 @@ jobs:
         with:
           node-version: lts/*
           cache: pnpm
+      - name: Clear pnpm store cache
+        run: pnpm store prune
       - name: Install Node Modules
         run: pnpm install --frozen-lockfile
       - name: Build the source code
