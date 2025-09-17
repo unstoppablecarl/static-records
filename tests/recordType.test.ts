@@ -17,16 +17,10 @@ describe('recordType.ts', async () => {
   })
 
   it('isStaticRecord() getRecordType() valid objects', () => {
-    const values = [
-      undefined,
-      null,
-      1,
-      'a',
-    ]
 
     const target = {
       [recordTypeKey]: 'foo',
-    }
+    } as HasRecordKey
 
     expectTypeOf(target).toEqualTypeOf<HasRecordKey>()
     expect(isStaticRecord(target)).toBe(true)

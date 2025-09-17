@@ -1,6 +1,7 @@
 import { JIM, type Person } from './people'
 import { staticRecords } from '../../src'
-import type { Optional } from './helpers'
+
+import type { Optional } from '../../src/type-util'
 
 export type Vehicle = {
   id: string,

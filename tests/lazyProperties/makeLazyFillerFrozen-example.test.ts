@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { recordTypeKey } from '../../src'
 import { CAR } from './_helpers/frozen-vehicles-data'
 import { DAN } from './_helpers/frozen-drivers-data'
-import { getLazyProps } from './_helpers/_helpers'
+import { getLazyProps } from '../../src/lazyProperties/trackLazyProps'
 
 describe('frozenFiller example', async () => {
   it('filler frozen', async () => {
@@ -13,16 +13,16 @@ describe('frozenFiller example', async () => {
     })
     expect(desc?.get).to.not.be.undefined
 
-    expect(getLazyProps(CAR)).toEqual(new Set([
+    expect(getLazyProps(CAR)).toEqual([
       'driverName',
       'driverIsAdult',
-    ]))
+    ])
 
     expect(CAR.driverName).toEqual('Dan')
 
-    expect(getLazyProps(CAR)).toEqual(new Set([
+    expect(getLazyProps(CAR)).toEqual([
       'driverIsAdult',
-    ]))
+    ])
 
     expect(CAR.driverIsAdult).toEqual(true)
 
@@ -43,9 +43,9 @@ describe('frozenFiller example', async () => {
     })
     expect(desc?.get).to.not.be.undefined
 
-    expect(getLazyProps(DAN)).toEqual(new Set([
+    expect(getLazyProps(DAN)).toEqual([
       'carName',
-    ]))
+    ])
 
     expect(DAN.carName).toEqual('Car')
     expect(getLazyProps(DAN)).toEqual(undefined)

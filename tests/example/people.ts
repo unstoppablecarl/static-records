@@ -1,6 +1,6 @@
 import { staticRecords } from '../../src'
-import type { Optional } from './helpers'
 import { VAN, type Vehicle } from './vehicles'
+import type { Optional } from '../../src/type-util'
 
 export type Person = {
   id: string,

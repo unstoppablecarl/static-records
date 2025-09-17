@@ -1,8 +1,7 @@
 import { markdownMagic } from 'markdown-magic'
 
-// @ts-expect-error
+// @ts-ignore
 global.__DEV__ = true
-
 // @ts-ignore
 import codeTransform from '../node_modules/markdown-magic/src/transforms/code/index.js'
 import { basename, dirname, resolve } from 'node:path'

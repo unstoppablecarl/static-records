@@ -1,11 +1,11 @@
-import { type DefaultProtoItem, recordTypeKey, staticRecords } from '../../src'
+import { recordTypeKey, staticRecords } from '../../src'
 
 type Widget = {
   readonly id: string,
   readonly name: string
 }
 
-type ProtoWidget = DefaultProtoItem & {
+type ProtoWidget = {
   readonly id: string,
   readonly [recordTypeKey]: string
 }

@@ -59,7 +59,7 @@ function makeSeller(item: Seller, input: {
 }): SellerInput {
   const {
     firstName,
-    lastName
+    lastName,
   } = item
 
   return {

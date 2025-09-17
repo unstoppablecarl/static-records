@@ -1,6 +1,5 @@
-// improved-gc.test.js
 import { describe, expect, it } from 'vitest'
-import { lazy, lazyFiller, recordTypeKey, staticRecords } from '../../src'
+import { type HasParent, lazyTree, makeLazyFiller, recordTypeKey, staticRecords } from '../../src'
 
 // Helper to run test with proper Node.js flags
 if (typeof global !== 'undefined' && !global.gc) {
@@ -18,20 +17,19 @@ describe('Proxy collect-ability tests', () => {
   it('temp object should be collectable', async () => {
 
     const RECORDS = staticRecords('Record', {
-      freezer: false,
-      filler: lazyFiller,
+      filler: makeLazyFiller(),
     })
 
     const DAN = RECORDS.define('DAN', () => ({
       name: 'Dan',
       rootName: 'Danny',
-      meta: lazy((parent1, root1) => {
+      meta: lazyTree((parent1: HasParent, root1: HasParent) => {
         finalizer.register(parent1, 'parent1')
         finalizer.register(root1, 'root1')
 
         return {
           rootName: root1.rootName,
-          foo: lazy((parent2, root2) => {
+          foo: lazyTree((parent2: HasParent, root2: HasParent) => {
             finalizer.register(parent2, 'parent2')
             finalizer.register(root2, 'root2')
 
@@ -56,10 +54,10 @@ describe('Proxy collect-ability tests', () => {
         foo: {
           parentName: 'Dan',
           rootName: 'Danny',
-          some: 'thing'
-        }
+          some: 'thing',
+        },
       },
-      [recordTypeKey]: 'Record'
+      [recordTypeKey]: 'Record',
     })
 
     // try to force gc
@@ -131,5 +129,6 @@ function addMemoryPressure() {
     }
     arrays.push(arr)
   }
-  return arrays.length // Return something to prevent optimization
+  // Return something to prevent optimization
+  return arrays.length
 }

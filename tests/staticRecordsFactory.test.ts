@@ -10,35 +10,6 @@ type Vehicle = {
 }
 
 describe('staticTypeFactory() tests', async () => {
-  describe('options.freezer = custom', async () => {
-    const makeStaticRecords = staticRecordsFactory({
-      freezer: (record) => {
-        record.tested = 'freezer'
-        return record
-      },
-    })
-
-    it('factory with no options', async () => {
-      const VEHICLES = makeStaticRecords<Vehicle>('VEHICLE')
-      const { CAR, VAN } = defineAndLockVehicles<Vehicle>(VEHICLES)
-
-      expect(CAR.tested).toBe('freezer')
-      expect(CAR).toBeFrozen(false)
-      expect(VAN.tested).toBe('freezer')
-      expect(VAN).toBeFrozen(false)
-    })
-
-    it('factory options.freezer = false', async () => {
-      const VEHICLES2 = makeStaticRecords<Vehicle>('VEHICLE', {
-        freezer: false,
-      })
-      const { CAR, VAN } = defineAndLockVehicles<Vehicle>(VEHICLES2)
-      expect(CAR.tested).toBe(undefined)
-      expect(CAR).toBeFrozen(false)
-      expect(VAN.tested).toBe(undefined)
-      expect(VAN).toBeFrozen(false)
-    })
-  })
 
   describe('options.creator = custom', async () => {
     const makeStaticRecords = staticRecordsFactory({

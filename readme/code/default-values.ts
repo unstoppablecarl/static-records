@@ -2,9 +2,9 @@ import { staticRecords } from '../../src'
 import type { TestCase } from '../types'
 
 type Tire = {
-  id: string,
-  name: string;
-  brand: string,
+  readonly id: string,
+  readonly name: string;
+  readonly brand: string,
 };
 
 export const TIRES = staticRecords<Tire>('Tire')

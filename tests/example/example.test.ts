@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { CAR, VAN, type Vehicle } from './example/vehicles'
-import { JIM, type Person, SUE } from './example/people'
+import { CAR, VAN, type Vehicle } from './vehicles'
+import { JIM, type Person, SUE } from './people'
 
 describe('example tests', async () => {
   it('test case 1', async () => {

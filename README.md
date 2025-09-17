@@ -22,10 +22,10 @@ objects defined at runtime.
 import { staticRecords } from 'static-records'
 
 export type Person = {
-  id: string;
-  name: string;
-  manager: Person | null;
-  emergency_contact: Person | null;
+  readonly id: string;
+  readonly name: string;
+  readonly manager: Person | null;
+  readonly emergency_contact: Person | null;
 }
 
 export const PEOPLE = staticRecords<Person>(/* Record Type Name: */ 'Person')
@@ -60,10 +60,10 @@ import { staticRecords } from 'static-records'
 import { JIM, type Person, SUE } from './person-data'
 
 export type Vehicle = {
-  id: string,
-  name: string,
-  driver: Person,
-  passengers?: Person[],
+readonly id: string,
+readonly name: string,
+readonly driver: Person,
+readonly passengers?: Person[],
 }
 
 export const VEHICLES = staticRecords<Vehicle>(/* Record Type Name: */ 'Vehicle')
@@ -114,8 +114,8 @@ CAR.driver.id // 'SUE'
 import { staticRecords } from 'static-records'
 
 type Contact = {
-  id: string,
-  name: string;
+  readonly id: string,
+  readonly name: string;
 };
 
 export const CONTACTS = staticRecords<Contact>('Contact')
@@ -148,9 +148,9 @@ Using a factory like `makeTire()` below allows for default values and easy objec
 import { staticRecords } from 'static-records'
 
 type Tire = {
-  id: string,
-  name: string;
-  brand: string,
+  readonly id: string,
+  readonly name: string;
+  readonly brand: string,
 };
 
 export const TIRES = staticRecords<Tire>('Tire')
@@ -191,48 +191,19 @@ PERFORMANCE.brand // 'goodyear'
 ```
 <!-- end-doc-gen -->
 
-## Freezer Options
-
-`Object.freeze()` is applied to all records and their children after `lock()` is called.
-
-### Custom Deep Freeze
-
-You can use a custom `freezer` function if needed or disable it.
-For very large objects you may need to use a non-recursive `freezer` implementation.
-You can also disable `freezer` and rely on typescript's readonly modifier.
-
-See the [default freezer](src/deepFreeze.ts)
-
-```ts
-function myFreezer(obj) {
-  Object.freeze(obj)
-
-  Object.freeze(obj.childObjects).forEach(item => {
-    Object.freeze(item)
-  })
-
-  return obj
-}
-
-export const CONTACTS = staticRecords<Contact>('Contact', { freezer: myFreezer })
-
-// disabled
-export const VEHICLES = staticRecords<Contact>('Vehicle', { freezer: false })
-```
-
-### Creator and Locker Options
+### Creator and Filler Options
 The `creator` and `filler` options allow deeper control over object creation.
 
 <!-- doc-gen CODE src="./readme/code/creator-and-filler-options.ts" -->
 ```ts
-import { recordTypeKey, staticRecords } from 'static-records'
+import { type DefaultProtoItem, recordTypeKey, staticRecords } from 'static-records'
 
 type Widget = {
   readonly id: string,
   readonly name: string
 }
 
-type ProtoWidget = {
+type ProtoWidget = DefaultProtoItem & {
   readonly id: string,
   readonly [recordTypeKey]: string
 }
@@ -376,19 +347,69 @@ SAM instanceof Seller // true
 ```
 <!-- end-doc-gen -->
 
+### Advanced Types
+<!-- doc-gen CODE src="./readme/code/creator-and-filler-options-advanced.ts" -->
+```ts
+import { recordTypeKey, staticRecords } from 'static-records'
+
+type Widget = {
+  readonly id: string,
+  readonly name: string
+}
+
+type ProtoWidget = {
+  readonly id: string,
+  readonly [recordTypeKey]: string,
+  readonly something: string,
+}
+
+type WidgetInput = {
+  speed: number
+}
+const WIDGETS = staticRecords<Widget, ProtoWidget, WidgetInput>('Widget', {
+  // ts infers return type is ProtoWidget
+  creator(id: string, recordType: string) {
+    return {
+      id,
+      [recordTypeKey]: recordType,
+      something: 'extra',
+    }
+  },
+  // ts infers argument types
+  // item: ProtoWidget,
+  // input: WidgetInput,
+  filler(item, input) {
+    Object.assign(item, input)
+  },
+})
+
+const BOOP = WIDGETS.define(
+  'BOOP',
+  // factory must return WidgetInput
+  () => ({
+    name: 'Boop',
+    speed: 99,
+  }),
+)
+
+WIDGETS.lock()
+```
+<!-- end-doc-gen -->
+
 ### Factories and Default Options
 
 A static records factory can be created to set reusable default options.
-<!-- doc-gen CODE src="./readme/code/static-records-factory.ts" -->
+<!-- doc-gen CODE src="./readme/code/static-records-factory.ts" test=true -->
 ```ts
 import { type DefaultProtoItem, recordTypeKey, staticRecordsFactory } from 'static-records'
 
 export type BaseItem = {
-  id: string,
+  readonly id: string,
+  readonly uid: string,
 }
 
 type BaseProtoItem = BaseItem & DefaultProtoItem & {
-  uid: string,
+  readonly uid: string,
 }
 
 export const makeStaticRecords = staticRecordsFactory<BaseItem, BaseProtoItem>({
@@ -400,8 +421,97 @@ export const makeStaticRecords = staticRecordsFactory<BaseItem, BaseProtoItem>({
       [recordTypeKey]: recordType,
     }
   },
-  freezer: false,
 })
+
+export type Building = BaseItem & {
+  readonly name: string,
+}
+export const BUILDINGS = makeStaticRecords<Building>('Building')
+
+export const TOWER_A = BUILDINGS.define(
+  'TOWER_A',
+  () => ({
+    name: 'Tower A',
+  }),
+)
+
+BUILDINGS.lock()
+
+TOWER_A.id // 'TOWER_A'
+TOWER_A.name // 'Tower A'
+TOWER_A.uid // 'Building-TOWER_A'
+```
+<!-- end-doc-gen -->
+
+### Advanced Factory Types
+
+<!-- doc-gen CODE src="./readme/code/static-records-factory-advanced.ts" test=true -->
+```ts
+import { type DefaultProtoItem, recordTypeKey, staticRecordsFactory } from 'static-records'
+
+// base type for all items
+export type BaseItem = {
+  id: string,
+  uid: string,
+  zone: string,
+}
+
+// base type of all proto objects
+export type BaseProtoItem = DefaultProtoItem & {
+  uid: string,
+}
+
+// input that will be required by all record inputs
+export type BaseInput = {
+  zone: string,
+}
+
+export const makeStaticRecords = staticRecordsFactory<BaseItem, BaseProtoItem, BaseInput>({
+  // returns BaseProtoItem
+  creator(id, recordType) {
+    return {
+      id,
+      [recordTypeKey]: recordType,
+      // adding unique id from BaseProtoItem
+      uid: `${recordType}-${id}`,
+    }
+  },
+})
+
+export type Building = BaseItem & {
+  name: string,
+}
+
+// optionally add more to the proto object
+export type BuildingProto = BaseProtoItem & {
+  moreProtoData: string,
+}
+
+export type BuildingInput = BaseInput & {
+  name: string,
+}
+export const BUILDINGS = makeStaticRecords<Building, BuildingProto, BuildingInput>('Building', {
+  // options here override the factory options above via Object.assign(factoryOptions, recordOptions)
+  filler(item, input) {
+    // @TODO validate item.zone
+    Object.assign(item, input)
+  },
+})
+
+export const TOWER_A = BUILDINGS.define(
+  'TOWER_A',
+  () => ({
+    name: 'Tower A',
+    zone: 'Alpha',
+  }),
+)
+
+BUILDINGS.lock()
+
+TOWER_A.id // 'TOWER_A'
+TOWER_A.name // 'Tower A'
+TOWER_A.uid // 'Building-TOWER_A'
+TOWER_A.zone // 'Alpha'
 ```
 <!-- end-doc-gen -->
 

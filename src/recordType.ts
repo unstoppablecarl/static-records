@@ -7,10 +7,10 @@ export const isStaticRecord = (obj: any) => obj?.[recordTypeKey] !== undefined
 export const getRecordType = (obj: any) => obj?.[recordTypeKey]
 
 export type HasRecordKey = {
-  [recordTypeKey]: string
+  readonly [recordTypeKey]: string
 }
 export type HasId = {
-  id: string,
+  readonly id: string,
 }
 export type DefaultProtoItem = HasId & HasRecordKey
 export type WithRecordType<T extends HasId> = T & HasRecordKey

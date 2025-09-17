@@ -2,8 +2,8 @@ import { staticRecords } from '../../src'
 import type { TestCase } from '../types'
 
 type Contact = {
-  id: string,
-  name: string;
+  readonly id: string,
+  readonly name: string;
 };
 
 export const CONTACTS = staticRecords<Contact>('Contact')

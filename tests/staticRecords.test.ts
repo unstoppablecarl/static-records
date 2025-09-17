@@ -63,12 +63,6 @@ describe('staticRecords() unit tests', async () => {
     expect(VEHICLES.toObject()).toEqual(first)
     // should be new object every time
     expect(VEHICLES.toObject()).not.toBe(first)
-
-    expect(VEHICLES.toObject()).toBeFrozen(false)
-
-    Object.values(VEHICLES.toObject()).forEach(item => {
-      expect(item).toBeFrozen(true)
-    })
   })
 
   it('.has()', async () => {

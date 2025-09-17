@@ -1,4 +1,4 @@
-import { lazy, type Lazy, lazyFrozenFiller, staticRecords } from '../../../src'
+import { lazy, type Lazy, makeLazyFiller, staticRecords } from '../../../src'
 import { DAN } from './frozen-drivers-data'
 
 type Vehicle = {
@@ -15,8 +15,7 @@ type VehicleInput = {
 }
 
 export const VEHICLES = staticRecords<Vehicle, never, VehicleInput>('VEHICLE', {
-  freezer: false,
-  filler: lazyFrozenFiller,
+  filler: makeLazyFiller({ freeze: true }),
 })
 
 export const CAR = VEHICLES.define(

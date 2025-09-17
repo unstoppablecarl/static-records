@@ -30,8 +30,8 @@ describe('staticTypeFactory() options types', async () => {
         expectTypeOf(input).toEqualTypeOf<NeverProtoKeys<BaseItem, DefaultProtoItem>>()
 
         type expected = {
-          id?: never
-          [recordTypeKey]?: never,
+          readonly id?: never
+          readonly [recordTypeKey]?: never,
           baseItem: string,
         }
 
@@ -70,8 +70,8 @@ describe('staticTypeFactory() options types', async () => {
         expectTypeOf(input).toEqualTypeOf<NeverProtoKeys<BaseItem, BaseProtoItem>>()
 
         type expected = {
-          id?: never
-          [recordTypeKey]?: never,
+          readonly id?: never
+          readonly [recordTypeKey]?: never,
           baseProto?: never,
           baseItem: string,
           baseInputValue: string,
@@ -116,8 +116,8 @@ describe('staticTypeFactory() options types', async () => {
         expectTypeOf(input).toEqualTypeOf<NeverProtoKeys<BaseInput, BaseProtoItem>>()
 
         type expected = {
-          id?: never
-          [recordTypeKey]?: never,
+          readonly id?: never
+          readonly [recordTypeKey]?: never,
           baseProto?: never,
           baseInputSource: string,
           // note: should not be included as input overrides all
@@ -142,8 +142,8 @@ describe('staticTypeFactory() options types', async () => {
 
       type Result = MakeOptionsInput<BaseItem>
       type expected = {
-        id?: never
-        [recordTypeKey]?: never,
+        readonly id?: never
+        readonly [recordTypeKey]?: never,
         baseItem: string,
       }
 
@@ -163,8 +163,8 @@ describe('staticTypeFactory() options types', async () => {
 
       type Result = MakeOptionsInput<BaseItem, BaseProtoItem>
       type expected = {
-        id?: never
-        [recordTypeKey]?: never,
+        readonly id?: never
+        readonly [recordTypeKey]?: never,
         baseProto?: never,
         baseItem: string,
       }
@@ -189,8 +189,8 @@ describe('staticTypeFactory() options types', async () => {
 
       type Result = MakeOptionsInput<BaseItem, BaseProtoItem, BaseInput>
       type expected = {
-        id?: never
-        [recordTypeKey]?: never,
+        readonly id?: never
+        readonly [recordTypeKey]?: never,
         baseProto?: never,
         // note: should not be included as input overrides all
         // baseItem: string,

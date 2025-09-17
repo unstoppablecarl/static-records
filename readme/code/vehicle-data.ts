@@ -3,10 +3,10 @@ import { staticRecords } from '../../src'
 import { JIM, type Person, SUE } from './person-data'
 
 export type Vehicle = {
-  id: string,
-  name: string,
-  driver: Person,
-  passengers?: Person[],
+  readonly id: string,
+  readonly name: string,
+  readonly driver: Person,
+  readonly passengers?: Person[],
 }
 
 export const VEHICLES = staticRecords<Vehicle>(/* Record Type Name: */ 'Vehicle')

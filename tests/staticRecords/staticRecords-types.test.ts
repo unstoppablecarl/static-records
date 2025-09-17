@@ -4,7 +4,7 @@ import { type HasId, type HasRecordKey, recordTypeKey, staticRecords, type WithR
 describe('staticRecords() types', async () => {
   describe('GENERICS: Item', async () => {
     type Vehicle = {
-      id: string,
+      readonly id: string,
       name: string,
     }
     const VEHICLES = staticRecords<Vehicle>('VEHICLE')
@@ -21,25 +21,25 @@ describe('staticRecords() types', async () => {
       expectTypeOf(CAR as Vehicle).toEqualTypeOf<Vehicle>()
 
       expectTypeOf(CAR).toMatchObjectType<{
-        id: string,
+        readonly id: string,
+        readonly [recordTypeKey]: string,
         name: string,
-        [recordTypeKey]: string,
       }>()
     })
 
     it('definer return type', async () => {
       type InputReturnValue = ReturnType<Parameters<typeof VEHICLES.define>[1]>
       expectTypeOf<InputReturnValue>().toMatchObjectType<{
+        readonly id?: never,
+        readonly [recordTypeKey]?: never
         name: string,
-        id?: never,
-        [recordTypeKey]?: never
       }>()
     })
   })
 
   describe('GENERICS: Item, ProtoItem', async () => {
     type Vehicle = {
-      id: string,
+      readonly id: string,
       name: string,
       foo: string,
     }
@@ -71,27 +71,27 @@ describe('staticRecords() types', async () => {
       expectTypeOf(CAR as Vehicle).toEqualTypeOf<Vehicle>()
 
       expectTypeOf(CAR).toMatchObjectType<{
-        id: string,
+        readonly id: string,
+        readonly [recordTypeKey]: string,
         name: string,
         foo: string,
-        [recordTypeKey]: string,
       }>()
     })
 
     it('definer return type', async () => {
       type InputReturnValue = ReturnType<Parameters<typeof VEHICLES.define>[1]>
       expectTypeOf<InputReturnValue>().toMatchObjectType<{
-        name: string,
-        id?: never,
-        [recordTypeKey]?: never,
+        readonly id?: never,
+        readonly [recordTypeKey]?: never,
         foo?: never
+        name: string,
       }>()
     })
   })
 
   describe('GENERICS: Item, ProtoItem, Input', async () => {
     type Vehicle = {
-      id: string,
+      readonly id: string,
       name: string,
       foo: string,
     }
@@ -127,10 +127,10 @@ describe('staticRecords() types', async () => {
       expectTypeOf(CAR as Vehicle).toEqualTypeOf<Vehicle>()
 
       expectTypeOf(CAR).toMatchObjectType<{
-        id: string,
+        readonly id: string,
+        readonly [recordTypeKey]: string,
         name: string,
         foo: string,
-        [recordTypeKey]: string,
       }>()
     })
 

@@ -1,4 +1,3 @@
-import { deepFreeze } from './deepFreeze'
 import { type DefaultProtoItem, type HasId, recordTypeKey, type WithRecordType } from './recordType'
 import type { NeverProtoKeys, Rec } from './type-util'
 
@@ -27,7 +26,6 @@ export type Options<
 > = {
   creator?: Creator<ProtoItem, Input>,
   filler?: Filler<ProtoItem, Input>
-  freezer?: Freezer
 }
 
 export type Creator<
@@ -38,9 +36,7 @@ export type Creator<
 export type Filler<
   ProtoItem extends HasId,
   Input extends Rec,
-> = (item: ProtoItem, input: Input, freezer: Freezer) => void
-
-export type Freezer = false | ((obj: Rec) => void)
+> = (item: ProtoItem, input: Input) => void
 
 export function staticRecords<
   Item extends HasId,
@@ -57,7 +53,6 @@ export function staticRecords<
   const definers: Map<string, Factory> = new Map()
   let locked = false
 
-  const freezer = options?.freezer ?? deepFreeze
   const creator: Creator<ProtoItem, Input> = options?.creator ?? ((id, recordType): ProtoItem => {
     return {
       id,
@@ -96,16 +91,9 @@ export function staticRecords<
         filler(
           item as unknown as ProtoItem,
           definer(item as unknown as ProtoItem),
-          freezer,
         )
-
-        if (freezer) {
-          freezer(item)
-        }
       })
 
-      // always freeze records object
-      Object.freeze(staticData)
       definers.clear()
       locked = true
     },
@@ -120,7 +108,6 @@ export function staticRecords<
     has: (id: string) => staticData[id] !== undefined,
     locked: () => locked,
     toObject() {
-      // create unfrozen copy
       return {
         ...staticData,
       }

@@ -1,13 +1,10 @@
-// Stryker disable next-line all
-/* v8 ignore next -- @preserve */
-const __DEV__ = typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production'
-
 export * from './deepFreeze'
 export * from './staticRecords'
 export * from './staticRecordsFactory'
 export * from './recordType'
 export * from './lazyProperties'
-export { lazyFrozenFiller, lazyFiller } from './lazyProperties/lazyFiller'
+export { makeLazyFiller } from './lazyProperties/lazyFiller'
+export { getLazyProps } from './lazyProperties/trackLazyProps'
 export type {
   NeverProtoKeys,
 } from './type-util'

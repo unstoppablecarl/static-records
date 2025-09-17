@@ -2,7 +2,6 @@ import { expect } from 'vitest'
 
 interface CustomMatchers<R = unknown> {
   toBeFrozen(value: boolean): R;
-  toBeExtensible(value: boolean): R;
   toHaveTheSameKeysAs(target: any): R;
 }
 
@@ -21,16 +20,6 @@ expect.extend({
       message: () => value
         ? `expected Object.isFrozen() to be true`
         : `expected Object.isFrozen() to be false`,
-      pass,
-    }
-  },
-
-  toBeExtensible(received: any, value: boolean) {
-    const pass = Object.isExtensible(received) === value
-    return {
-      message: () => value
-        ? `expected Object.isExtensible() to be true`
-        : `expected Object.isExtensible() to be false`,
       pass,
     }
   },

@@ -1,10 +1,10 @@
 import { staticRecords } from '../../src'
 
 export type Person = {
-  id: string;
-  name: string;
-  manager: Person | null;
-  emergency_contact: Person | null;
+  readonly id: string;
+  readonly name: string;
+  readonly manager: Person | null;
+  readonly emergency_contact: Person | null;
 }
 
 export const PEOPLE = staticRecords<Person>(/* Record Type Name: */ 'Person')

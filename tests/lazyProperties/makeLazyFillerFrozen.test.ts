@@ -1,6 +1,7 @@
-import { describe, expect, it, vi } from 'vitest'
-import { lazy, type Lazy, lazyFrozenFiller, recordTypeKey, staticRecords } from '../../src'
-import { getLazyProps, isProxy } from './_helpers/_helpers'
+import { describe, expect, it } from 'vitest'
+import { lazy, type Lazy, makeLazyFiller, recordTypeKey, staticRecords } from '../../src'
+import { isProxy } from './_helpers/_helpers'
+import { getLazyProps } from '../../src/lazyProperties/trackLazyProps'
 
 describe('frozenFiller', () => {
   type Driver = {
@@ -18,8 +19,7 @@ describe('frozenFiller', () => {
   }
 
   const DRIVERS = staticRecords<Driver, never, DriverInput>('DRIVER', {
-    freezer: false,
-    filler: lazyFrozenFiller,
+    filler: makeLazyFiller({ freeze: true }),
   })
 
   const DAN = DRIVERS.define(
@@ -57,16 +57,16 @@ describe('frozenFiller', () => {
   })
 
   it('lifecycle', () => {
-    expect(getLazyProps(DAN)).toEqual(new Set([
+    expect(getLazyProps(DAN)).toEqual([
       'carName',
       'location',
-    ]))
+    ])
 
     expect(DAN.carName).toEqual('Mustang')
 
-    expect(getLazyProps(DAN)).toEqual(new Set([
+    expect(getLazyProps(DAN)).toEqual([
       'location',
-    ]))
+    ])
 
     expect(DAN.location).toEqual('Arizona')
 
@@ -80,29 +80,18 @@ describe('frozenFiller', () => {
       location: 'Arizona',
       age: 20,
     })
-  })
 
-  it('lifecycle PRODUCTION', () => {
-    vi.stubGlobal('__DEV__', false)
-
-    expect(getLazyProps(DAN)).toEqual(undefined)
-    expect(DAN.carName).toEqual('Mustang')
-    expect(DAN.location).toEqual('Arizona')
-
-    expect(DAN).toEqual({
-      id: DAN.id,
-      name: DAN.name,
-      [recordTypeKey]: 'DRIVER',
-      carName: 'Mustang',
-      location: 'Arizona',
-      age: 20,
+    const desc2 = Object.getOwnPropertyDescriptor(DAN, 'carName')
+    expect(desc2).to.include({
+      configurable: true,
+      enumerable: true,
+      writable: false,
     })
   })
 
   it('freezes object that do not have lazy resolvers', () => {
     const DRIVERS = staticRecords('DRIVER', {
-      freezer: false,
-      filler: lazyFrozenFiller,
+      filler: makeLazyFiller({ freeze: true }),
     })
 
     const DAN: any = DRIVERS.define(
@@ -133,8 +122,7 @@ describe('frozenFiller', () => {
 
   it('circular referenced static objects', () => {
     const DRIVERS = staticRecords('DRIVER', {
-      freezer: false,
-      filler: lazyFrozenFiller,
+      filler: makeLazyFiller({ freeze: true }),
     })
 
     const a: any = {
@@ -182,8 +170,7 @@ describe('frozenFiller', () => {
 
   it('circular referenced lazy objects', () => {
     const DRIVERS = staticRecords('DRIVER', {
-      freezer: false,
-      filler: lazyFrozenFiller,
+      filler: makeLazyFiller({ freeze: true }),
     })
 
     const a: any = {
@@ -256,8 +243,7 @@ describe('frozenFiller', () => {
   it('correctly locks objects', () => {
 
     const DRIVERS = staticRecords('DRIVER', {
-      freezer: false,
-      filler: lazyFrozenFiller,
+      filler: makeLazyFiller({ freeze: true }),
     })
 
     const DAN: any = DRIVERS.define(

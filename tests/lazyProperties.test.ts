@@ -1,31 +1,35 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, expectTypeOf, it } from 'vitest'
 import {
   hasLazyResolvers,
-  isLazyResolver,
+  type HasParent,
+  isAnyLazyResolver,
   lazy,
   LAZY_RESOLVER,
-  lazyFiller,
-  lazyFrozenFiller,
-  staticRecords,
+  LazyResolverType,
+  lazyTree,
 } from '../src'
-import { makeLazyFiller } from '../src/lazyProperties/lazyFiller'
 
 describe('lazyProperties', async () => {
   it('lazy()', async () => {
     const target = lazy(() => ({
       foo: 'bar',
     }))
-
-    // @ts-expect-error
-    expect(target[LAZY_RESOLVER]).toEqual(true)
+    expect(target[LAZY_RESOLVER]).toEqual(LazyResolverType.DEFAULT)
   })
 
-  it('isLazyResolver()', async () => {
+  it('lazyTree()', async () => {
+    const target = lazyTree(() => ({
+      foo: 'bar',
+    }))
+    expect(target[LAZY_RESOLVER]).toEqual(LazyResolverType.TREE)
+  })
+
+  it('isAnyLazyResolver()', async () => {
     const target = lazy(() => ({
       foo: 'bar',
     }))
-    expect(isLazyResolver(target)).toEqual(true)
-    expect(isLazyResolver({ foo: 'bar' })).toEqual(false)
+    expect(isAnyLazyResolver(target)).toEqual(true)
+    expect(isAnyLazyResolver({ foo: 'bar' })).toEqual(false)
 
     const values = [
       null,
@@ -39,7 +43,7 @@ describe('lazyProperties', async () => {
     ]
 
     values.forEach((v) => {
-      expect(isLazyResolver(v)).toBe(false)
+      expect(isAnyLazyResolver(v)).toBe(false)
     })
   })
 
@@ -50,50 +54,45 @@ describe('lazyProperties', async () => {
         foo: 'bar',
       })),
     }
-    expect(isLazyResolver(target.extra)).toEqual(true)
+    expect(isAnyLazyResolver(target.extra)).toEqual(true)
     expect(hasLazyResolvers(target)).toEqual(true)
     expect(hasLazyResolvers({ foo: 'bar' })).toEqual(false)
   })
 
-  it('lazyFiller freezer exception', async () => {
-    const R = staticRecords('Foo', {
-      filler: lazyFiller,
+  describe('lazy() type checks', async () => {
+    it('lazy() inferred from resolver', async () => {
+      const target = lazyTree((parent, root) => {
+
+        expectTypeOf(parent).toEqualTypeOf<HasParent | undefined>()
+        expectTypeOf(root).toEqualTypeOf<HasParent | undefined>()
+
+        return 'foo'
+      })
+
+      // expectTypeOf(target).toEqualTypeOf<LazyResolver<string>>()
     })
 
-    R.define('A', () => ({
-      foo: 'bar',
-    }))
+    it('lazy() provided generics', async () => {
+      type Input = {
+        inputName: string
+      }
+      type Parent = HasParent & {
+        parentName: string,
+      }
+      type Root = HasParent & {
+        rootName: string,
+      }
 
-    expect(() => {
-      R.lock()
-    }).toThrowError(`When using filler: lazyFiller, option.freeze must be false`)
-  })
+      const target = lazyTree<Input, Parent, Root>((parent, root) => {
+        expectTypeOf(parent).toEqualTypeOf<Parent>()
+        expectTypeOf(root).toEqualTypeOf<Root>()
 
-  it('lazyFrozenFiller freezer exception', async () => {
-    const R = staticRecords('Foo', {
-      filler: lazyFrozenFiller,
+        return {
+          inputName: 'foo',
+        }
+      })
+
+      expectTypeOf<ReturnType<typeof target>>().toEqualTypeOf<Input>()
     })
-
-    R.define('A', () => ({
-      foo: 'bar',
-    }))
-
-    expect(() => {
-      R.lock()
-    }).toThrowError(`When using filler: lazyFrozenFiller, option.freeze must be false`)
-  })
-
-  it('lazyFiller freezer exception', async () => {
-    const R = staticRecords('Foo', {
-      filler: makeLazyFiller(),
-    })
-
-    R.define('A', () => ({
-      foo: 'bar',
-    }))
-
-    expect(() => {
-      R.lock()
-    }).toThrowError(`When using filler: makeLazyFiller, option.freeze must be false`)
   })
 })

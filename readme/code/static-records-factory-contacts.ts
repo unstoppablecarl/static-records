@@ -2,9 +2,9 @@ import { type BaseItem, makeStaticRecords } from './static-records-factory'
 import type { TestCase } from '../types'
 
 type Contact = BaseItem & {
-  uid: string,
-  id: string,
-  name: string;
+  readonly uid: string,
+  readonly id: string,
+  readonly name: string;
 };
 
 export const CONTACTS = makeStaticRecords<Contact>('Contact')

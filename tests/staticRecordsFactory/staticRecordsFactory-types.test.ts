@@ -10,7 +10,7 @@ import {
 describe('staticTypeFactory() types', async () => {
   describe('staticRecordsFactory[] - makeStaticRecords[Vehicle]', async () => {
     type Vehicle = {
-      id: string,
+      readonly id: string,
       name: string,
     }
     const makeStaticRecords = staticRecordsFactory()
@@ -20,8 +20,8 @@ describe('staticTypeFactory() types', async () => {
         expectTypeOf(input).toEqualTypeOf<NeverProtoKeys<Vehicle, DefaultProtoItem>>()
 
         type expected = {
-          id?: never
-          [recordTypeKey]?: never,
+          readonly id?: never
+          readonly [recordTypeKey]?: never,
           name: string,
         }
 
@@ -43,8 +43,8 @@ describe('staticTypeFactory() types', async () => {
       expectTypeOf(CAR as Vehicle).toEqualTypeOf<Vehicle>()
 
       type expected = {
-        id: string,
-        [recordTypeKey]: string,
+        readonly id: string,
+        readonly [recordTypeKey]: string,
         name: string,
       }
 
@@ -56,8 +56,8 @@ describe('staticTypeFactory() types', async () => {
     it('definer return type', async () => {
       type InputReturnValue = ReturnType<Parameters<typeof VEHICLES.define>[1]>
       type expected = {
-        id?: never,
-        [recordTypeKey]?: never,
+        readonly id?: never,
+        readonly [recordTypeKey]?: never,
         name: string,
       }
 
@@ -70,7 +70,7 @@ describe('staticTypeFactory() types', async () => {
   describe('staticRecordsFactory[BaseItem]', () => {
     describe('--makeStaticRecords[Vehicle]', async () => {
       type BaseItem = {
-        id: string,
+        readonly id: string,
         meta: string,
       }
 
@@ -93,8 +93,8 @@ describe('staticTypeFactory() types', async () => {
         expectTypeOf(CAR as Vehicle).toEqualTypeOf<Vehicle>()
 
         type expected = {
-          id: string,
-          [recordTypeKey]: string,
+          readonly id: string,
+          readonly [recordTypeKey]: string,
           name: string,
           meta: string,
         }
@@ -108,8 +108,8 @@ describe('staticTypeFactory() types', async () => {
         type InputReturnValue = ReturnType<Parameters<typeof VEHICLES.define>[1]>
 
         type expected = {
-          id?: never,
-          [recordTypeKey]?: never,
+          readonly id?: never,
+          readonly [recordTypeKey]?: never,
           name: string,
           meta: string,
         }
@@ -121,7 +121,7 @@ describe('staticTypeFactory() types', async () => {
     })
     describe('--makeStaticRecords[Vehicle, VehicleProto]', async () => {
       type BaseItem = {
-        id: string,
+        readonly id: string,
         meta: string,
       }
 
@@ -157,8 +157,8 @@ describe('staticTypeFactory() types', async () => {
         expectTypeOf(CAR as Vehicle).toEqualTypeOf<Vehicle>()
 
         type expected = {
-          id: string,
-          [recordTypeKey]: string,
+          readonly id: string,
+          readonly [recordTypeKey]: string,
           vehicleProto: string,
           name: string,
           meta: string,
@@ -173,8 +173,8 @@ describe('staticTypeFactory() types', async () => {
         type InputReturnValue = ReturnType<Parameters<typeof VEHICLES.define>[1]>
 
         type expected = {
-          id?: never,
-          [recordTypeKey]?: never,
+          readonly id?: never,
+          readonly [recordTypeKey]?: never,
           vehicleProto?: never,
           name: string,
           meta: string,
@@ -188,7 +188,7 @@ describe('staticTypeFactory() types', async () => {
 
     describe('--makeStaticRecords[Vehicle, VehicleProto, VehicleInput]', async () => {
       type BaseItem = {
-        id: string,
+        readonly id: string,
         meta: string,
       }
 
@@ -220,8 +220,8 @@ describe('staticTypeFactory() types', async () => {
           expectTypeOf(input).toEqualTypeOf<NeverProtoKeys<VehicleInput, VehicleProto>>()
 
           type expected = {
-            id?: never,
-            [recordTypeKey]?: never,
+            readonly id?: never,
+            readonly [recordTypeKey]?: never,
             vehicleProto?: never,
             vehicleInput: string,
             meta: string,
@@ -256,8 +256,8 @@ describe('staticTypeFactory() types', async () => {
         expectTypeOf(CAR as Vehicle).toEqualTypeOf<Vehicle>()
 
         type expected = {
-          id: string,
-          [recordTypeKey]: string,
+          readonly id: string,
+          readonly [recordTypeKey]: string,
           vehicleProto: string,
           name: string,
           meta: string,
@@ -272,8 +272,8 @@ describe('staticTypeFactory() types', async () => {
         type InputReturnValue = ReturnType<Parameters<typeof VEHICLES.define>[1]>
 
         type expected = {
-          id?: never,
-          [recordTypeKey]?: never,
+          readonly id?: never,
+          readonly [recordTypeKey]?: never,
           vehicleProto?: never,
           name: string,
           meta: string,
@@ -294,7 +294,7 @@ describe('staticTypeFactory() types', async () => {
       }
 
       type BaseItem = BaseProtoItem & {
-        id: string,
+        readonly id: string,
         meta: string,
       }
 
@@ -327,8 +327,8 @@ describe('staticTypeFactory() types', async () => {
         expectTypeOf(CAR as Vehicle).toEqualTypeOf<Vehicle>()
 
         type expected = {
-          id: string,
-          [recordTypeKey]: string,
+          readonly id: string,
+          readonly [recordTypeKey]: string,
           uid: string,
           name: string,
           meta: string,
@@ -342,8 +342,8 @@ describe('staticTypeFactory() types', async () => {
       it('definer return type', async () => {
         type InputReturnValue = ReturnType<Parameters<typeof VEHICLES.define>[1]>
         type expected = {
-          id?: never,
-          [recordTypeKey]?: never,
+          readonly id?: never,
+          readonly [recordTypeKey]?: never,
           uid?: never,
           name: string,
           meta: string,
@@ -360,7 +360,7 @@ describe('staticTypeFactory() types', async () => {
       }
 
       type BaseItem = BaseProtoItem & {
-        id: string,
+        readonly id: string,
         meta: string,
       }
 
@@ -406,8 +406,8 @@ describe('staticTypeFactory() types', async () => {
         expectTypeOf(CAR as Vehicle).toEqualTypeOf<Vehicle>()
 
         type expected = {
-          id: string,
-          [recordTypeKey]: string,
+          readonly id: string,
+          readonly [recordTypeKey]: string,
           uid: string,
           vehicleProto: string,
           name: string,
@@ -422,8 +422,8 @@ describe('staticTypeFactory() types', async () => {
       it('definer return type', async () => {
         type InputReturnValue = ReturnType<Parameters<typeof VEHICLES.define>[1]>
         type expected = {
-          id?: never,
-          [recordTypeKey]?: never,
+          readonly id?: never,
+          readonly [recordTypeKey]?: never,
           uid?: never,
           vehicleProto?: never,
           name: string,
@@ -442,7 +442,7 @@ describe('staticTypeFactory() types', async () => {
       }
 
       type BaseItem = BaseProtoItem & {
-        id: string,
+        readonly id: string,
         meta: string,
       }
 
@@ -484,8 +484,8 @@ describe('staticTypeFactory() types', async () => {
           expectTypeOf(input).toEqualTypeOf<NeverProtoKeys<VehicleInput, VehicleProto>>()
 
           type expected = {
-            id?: never,
-            [recordTypeKey]?: never,
+            readonly id?: never,
+            readonly [recordTypeKey]?: never,
             uid?: never,
             vehicleProto?: never,
             vehicleInput: string,
@@ -521,8 +521,8 @@ describe('staticTypeFactory() types', async () => {
         expectTypeOf(CAR as Vehicle).toEqualTypeOf<Vehicle>()
 
         type expected = {
-          id: string,
-          [recordTypeKey]: string,
+          readonly id: string,
+          readonly [recordTypeKey]: string,
           uid: string,
           vehicleProto: string,
           name: string,
@@ -537,8 +537,8 @@ describe('staticTypeFactory() types', async () => {
       it('definer return type', async () => {
         type InputReturnValue = ReturnType<Parameters<typeof VEHICLES.define>[1]>
         type expected = {
-          id?: never,
-          [recordTypeKey]?: never,
+          readonly id?: never,
+          readonly [recordTypeKey]?: never,
           uid?: never,
           vehicleProto?: never,
           name: string,
@@ -590,8 +590,8 @@ describe('staticTypeFactory() types', async () => {
           expectTypeOf(input).toEqualTypeOf<NeverProtoKeys<Target, BaseProtoItem>>()
 
           type expected = {
-            id?: never
-            [recordTypeKey]?: never,
+            readonly id?: never
+            readonly [recordTypeKey]?: never,
             baseProto?: never,
             baseInputOnly: string,
             name: string,
@@ -632,8 +632,8 @@ describe('staticTypeFactory() types', async () => {
         expectTypeOf(CAR as Vehicle).toEqualTypeOf<Vehicle>()
 
         type expected = {
-          id: string,
-          [recordTypeKey]: string,
+          readonly id: string,
+          readonly [recordTypeKey]: string,
           baseProto: string,
           baseItem: string,
           name: string,
@@ -648,8 +648,8 @@ describe('staticTypeFactory() types', async () => {
       it('definer return type', async () => {
         type InputReturnValue = ReturnType<Parameters<typeof VEHICLES.define>[1]>
         type expected = {
-          id?: never
-          [recordTypeKey]?: never,
+          readonly id?: never
+          readonly [recordTypeKey]?: never,
           baseProto?: never,
           baseInputOnly: string,
           name: string,
@@ -709,8 +709,8 @@ describe('staticTypeFactory() types', async () => {
           expectTypeOf(input).toEqualTypeOf<NeverProtoKeys<Target, VehicleProto>>()
 
           type expected = {
-            id?: never
-            [recordTypeKey]?: never,
+            readonly id?: never
+            readonly [recordTypeKey]?: never,
             baseProto?: never,
             vehicleProto?: never,
             baseInputOnly: string,
@@ -750,8 +750,8 @@ describe('staticTypeFactory() types', async () => {
         expectTypeOf(CAR as Vehicle).toEqualTypeOf<Vehicle>()
 
         type expected = {
-          id: string,
-          [recordTypeKey]: string,
+          readonly id: string,
+          readonly [recordTypeKey]: string,
           baseProto: string,
           vehicleProto: string,
           baseItem: string,
@@ -766,13 +766,12 @@ describe('staticTypeFactory() types', async () => {
       it('definer return type', async () => {
         type InputReturnValue = ReturnType<Parameters<typeof VEHICLES.define>[1]>
         type expected = {
-          id?: never,
-          [recordTypeKey]?: never,
+          readonly id?: never,
+          readonly [recordTypeKey]?: never,
           baseProto?: never,
           vehicleProto?: never,
           baseInputOnly: string,
           baseItem: string,
-          // baseInputValue: string,
           vehicleOnly: string,
         }
 
@@ -831,8 +830,8 @@ describe('staticTypeFactory() types', async () => {
           expectTypeOf(input).toEqualTypeOf<NeverProtoKeys<VehicleInput, VehicleProto>>()
 
           type expected = {
-            id?: never
-            [recordTypeKey]?: never,
+            readonly id?: never
+            readonly [recordTypeKey]?: never,
             baseProto?: never,
             vehicleProto?: never,
             baseInputOnly: string,
@@ -873,8 +872,8 @@ describe('staticTypeFactory() types', async () => {
         expectTypeOf(CAR as Vehicle).toEqualTypeOf<Vehicle>()
 
         type expected = {
-          id: string,
-          [recordTypeKey]: string,
+          readonly id: string,
+          readonly [recordTypeKey]: string,
           baseProto: string,
           baseItem: string,
           baseInputValue: string,
@@ -891,8 +890,8 @@ describe('staticTypeFactory() types', async () => {
       it('definer return type', async () => {
         type InputReturnValue = ReturnType<Parameters<typeof VEHICLES.define>[1]>
         type expected = {
-          id?: never
-          [recordTypeKey]?: never,
+          readonly id?: never
+          readonly [recordTypeKey]?: never,
           baseProto?: never,
           vehicleProto?: never,
           baseInputOnly: string,

@@ -4,6 +4,8 @@ import { TESTS as contactsTests } from '../readme/code/contacts'
 import { TESTS as usingClassesTests } from '../readme/code/using-classes'
 import { TESTS as defaultValues } from '../readme/code/default-values'
 import { TESTS as factoryContactTests } from '../readme/code/static-records-factory-contacts'
+import { TESTS as factoryTests } from '../readme/code/static-records-factory'
+import { TESTS as factoryAdvancedTests } from '../readme/code/static-records-factory-advanced'
 
 import type { TestCase } from '../readme/types'
 
@@ -23,6 +25,13 @@ describe('readme tests', async () => {
   describe('static-records-factory-contacts.ts', async () => {
     runTests(factoryContactTests)
   })
+  describe('static-records-factory.ts', async () => {
+    runTests(factoryTests)
+  })
+  describe('static-records-factory-advanced.ts', async () => {
+    runTests(factoryAdvancedTests)
+  })
+
 })
 
 function runTests(tests: TestCase[]) {
