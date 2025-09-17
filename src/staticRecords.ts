@@ -96,7 +96,7 @@ export function staticRecords<
         filler(
           item as unknown as ProtoItem,
           definer(item as unknown as ProtoItem),
-          freezer
+          freezer,
         )
 
         if (freezer) {

@@ -22,8 +22,8 @@ describe('staticRecords() option tests', async () => {
 
     expect(CAR.tested).toBe('freezer')
     expect(VAN.tested).toBe('freezer')
-    expect(Object.isFrozen(CAR)).toBe(false)
-    expect(Object.isFrozen(VAN)).toBe(false)
+    expect(CAR).toBeFrozen(false)
+    expect(VAN).toBeFrozen(false)
   })
 
   it('options.freezer = false', async () => {
@@ -32,8 +32,8 @@ describe('staticRecords() option tests', async () => {
     })
     const { CAR, VAN } = defineAndLockVehicles(VEHICLES)
 
-    expect(Object.isFrozen(CAR)).toBe(false)
-    expect(Object.isFrozen(VAN)).toBe(false)
+    expect(CAR).toBeFrozen(false)
+    expect(VAN).toBeFrozen(false)
   })
 
   it('options.filler = custom', async () => {
@@ -89,8 +89,8 @@ describe('staticRecords() option tests', async () => {
 
     expect(CAR.tested).toBe('freezer')
     expect(VAN.tested).toBe('freezer')
-    expect(Object.isFrozen(CAR)).toBe(false)
-    expect(Object.isFrozen(VAN)).toBe(false)
+    expect(CAR).toBeFrozen(false)
+    expect(VAN).toBeFrozen(false)
     expect(tested).toBe(true)
   })
 })

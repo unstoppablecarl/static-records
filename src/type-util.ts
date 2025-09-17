@@ -3,5 +3,5 @@
 export type NeverProtoKeys<Item, ProtoItem> = Omit<Item, keyof ProtoItem> & {
   [K in keyof ProtoItem]?: never
 }
-export type Rec = Record<PropertyKey, any>
+export type Rec = Record<PropertyKey, unknown>
 
