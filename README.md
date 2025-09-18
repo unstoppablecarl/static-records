@@ -563,7 +563,7 @@ type Person = {
 }
 
 const PEOPLE = staticRecords<Person>('Person', {
-  filler: makeLazyFiller({}),
+  filler: makeLazyFiller(),
 })
 
 const DAN = PEOPLE.define(
@@ -587,6 +587,18 @@ DAN.emergencyContactName // 'Sue'
 SUE.emergencyContactName // 'Dan'
 ```
 <!-- end-doc-gen -->
+
+#### Freezing Lazy Resolvers
+Lazy resolvers cannot be directly frozen with `Object.freeze()`. So you cannot use the `frozenLocker()` with it. 
+It does have a `freeze` option that you can pass that will set things to be read only as much as is possible.
+
+```ts
+const PEOPLE = staticRecords<Person>('Person', {
+  filler: makeLazyFiller({
+    freeze: true
+  }),
+})
+```
 
 ## Building
 
