@@ -47,7 +47,8 @@ export const SUE = PEOPLE.define(
     emergencyContact: JIM,
   }),
 )
-// locks the data with deep Object.freeze()
+// creates the records
+// no more records can be defined after this
 PEOPLE.lock()
 ```
 <!-- end-doc-gen -->
@@ -216,7 +217,7 @@ const WIDGETS = staticRecords<Widget>('Widget', {
       id,
       // the recordTypeKey symbol is used by the
       // getRecordType() function
-      // and the deepFreeze() function to determine
+      // and the frozenLocker() function to determine
       // which objects are static records
       [recordTypeKey]: recordType,
     }

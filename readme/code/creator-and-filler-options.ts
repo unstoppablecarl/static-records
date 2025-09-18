@@ -18,7 +18,7 @@ const WIDGETS = staticRecords<Widget>('Widget', {
       id,
       // the recordTypeKey symbol is used by the
       // getRecordType() function
-      // and the deepFreeze() function to determine
+      // and the frozenLocker() function to determine
       // which objects are static records
       [recordTypeKey]: recordType,
     }
