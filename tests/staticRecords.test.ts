@@ -85,4 +85,23 @@ describe('staticRecords() unit tests', async () => {
     FOO.lock()
     expect(FOO.locked()).toBe(true)
   })
+
+  it('resolver arguments', async () => {
+    const FOO = staticRecords('THING')
+
+    const A = FOO.define('A', (protoItem, recordType) => ({
+      _id: protoItem.id,
+      _protoRecordType: protoItem[recordTypeKey],
+      _recordType: recordType,
+    }))
+    FOO.lock()
+
+    expect(A).toEqual({
+      id: 'A',
+      _id: 'A',
+      _protoRecordType: 'THING',
+      _recordType: 'THING',
+      [recordTypeKey]: 'THING',
+    })
+  })
 })

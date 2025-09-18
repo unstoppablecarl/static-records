@@ -18,7 +18,7 @@ export type StaticRecords<
 export type Definer<
   ProtoItem extends Rec,
   Input extends Rec
-> = (item: ProtoItem) => Input
+> = (item: ProtoItem, recordType: string) => Input
 
 export type Options<
   Item extends HasId,
@@ -93,7 +93,7 @@ export function staticRecords<
         // but it is externally exposed as an Item type
         filler(
           item as unknown as ProtoItem,
-          definer(item as unknown as ProtoItem),
+          definer(item as unknown as ProtoItem, recordType),
         )
       })
 
