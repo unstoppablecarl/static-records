@@ -1,4 +1,4 @@
-import { lazyTree, makeLazyFiller, staticRecords, type DefaultProtoItem, recordTypeKey } from '../../src'
+import { lazyTree, makeLazyFiller, staticRecords } from '../../src'
 import type { TestCase } from '../types'
 
 type Person = {
@@ -9,7 +9,9 @@ type Person = {
 }
 
 const PEOPLE = staticRecords<Person>('Person', {
-  filler: makeLazyFiller(),
+  filler: makeLazyFiller({
+    lazyTree: true,
+  }),
 })
 
 function makePerson<T>(input: T) {

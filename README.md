@@ -533,6 +533,8 @@ const PEOPLE = staticRecords<Person>('Person')
 
 const DAN = PEOPLE.define(
   'DAN',
+  // the protoItem arg has the id and recordType symbol keys
+  // the record type is passed in the second for convenience
   (protoItem: DefaultProtoItem, recordType: string) => ({
     name: 'Dan',
     slug: protoItem.id + '-' + recordType,
@@ -548,10 +550,11 @@ DAN.slug // 'DAN-Person'
 
 ### Lazy Resolvers
 `makeLazyFiller()` creates a filler that can have properties resolve when they are first read.
+This allows referencing the properties of other static records directly
 
 <!-- doc-gen CODE src="./readme/code/lazy-props.ts" test=true -->
 ```ts
-import { lazy, lazyTree, makeLazyFiller, staticRecords } from 'static-records'
+import { lazy, makeLazyFiller, staticRecords } from 'static-records'
 
 type Person = {
   readonly id: string,
@@ -560,9 +563,8 @@ type Person = {
 }
 
 const PEOPLE = staticRecords<Person>('Person', {
-  filler: makeLazyFiller(),
+  filler: makeLazyFiller({}),
 })
-
 
 const DAN = PEOPLE.define(
   'DAN',
@@ -581,8 +583,6 @@ const SUE = PEOPLE.define(
 )
 PEOPLE.lock()
 
-DAN.id // 'DAN'
-DAN.name // 'Dan'
 DAN.emergencyContactName // 'Sue'
 SUE.emergencyContactName // 'Dan'
 ```

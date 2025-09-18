@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { lazy, type Lazy, makeLazyFiller, recordTypeKey, staticRecords } from '../../src'
+import { lazy, type Lazy, lazyTree, makeLazyFiller, recordTypeKey, staticRecords } from '../../src'
 import { isProxy } from './_helpers/_helpers'
 import { getLazyProps } from '../../src/lazyProperties/trackLazyProps'
 
@@ -241,7 +241,6 @@ describe('makeLazyFiller frozen', () => {
   })
 
   it('correctly locks objects', () => {
-
     const DRIVERS = staticRecords('DRIVER', {
       filler: makeLazyFiller({ freeze: true }),
     })
@@ -264,10 +263,89 @@ describe('makeLazyFiller frozen', () => {
 
     DRIVERS.lock()
 
+    expect(DAN.alpha).toBeFrozen(true)
+    expect(DAN.alpha.out).toBeFrozen(true)
     expect(DAN).toBeFrozen(true)
     expect(DAN.beta.out).toBeFrozen(false)
     expect(DAN.beta.out.ref).toBe('b')
+  })
 
-    expect(DAN.beta.out).toBeFrozen(false)
+  it('does not freeze objects with lazy resolvers', () => {
+    const DRIVERS = staticRecords('DRIVER', {
+      filler: makeLazyFiller({ freeze: true, lazyTree: true }),
+    })
+
+    const DAN: any = DRIVERS.define(
+      'DAN',
+      () => ({
+        object: {
+          ref: 'a',
+          child: {
+            sub: 'a',
+          },
+        },
+        lazyTest: {
+          out: lazy(() => 'a'),
+          foo: 'bar',
+        },
+        lazyTreeTest: {
+          out: lazyTree(() => 'b'),
+          foo: 'bar',
+        },
+      }),
+    )
+    DRIVERS.lock()
+
+    expect(DAN).toBeFrozen(true)
+    expect(DAN.object).toBeFrozen(true)
+    expect(DAN.object.child).toBeFrozen(true)
+
+    expect(DAN.lazyTest).toBeFrozen(false)
+    expect(DAN.lazyTest.out).toBe('a')
+
+    expect(DAN.lazyTreeTest).toBeFrozen(false)
+    expect(DAN.lazyTreeTest.out).toBe('b')
+  })
+
+  it('does not freeze when disabled by default', () => {
+    const DRIVERS = staticRecords('DRIVER', {
+      filler: makeLazyFiller(),
+    })
+
+    notFrozenTest(DRIVERS)
+  })
+
+  it('does not lock when disabled', () => {
+    const DRIVERS = staticRecords('DRIVER', {
+      filler: makeLazyFiller({ freeze: false }),
+    })
+
+    notFrozenTest(DRIVERS)
   })
 })
+
+function notFrozenTest(DRIVERS: any) {
+  const DAN: any = DRIVERS.define(
+    'DAN',
+    () => ({
+      alpha: {
+        out: {
+          ref: 'a',
+        },
+      },
+      beta: {
+        out: {
+          ref: lazy(() => 'b'),
+        },
+      },
+    }),
+  )
+
+  DRIVERS.lock()
+
+  expect(DAN.alpha).toBeFrozen(false)
+  expect(DAN.alpha.out).toBeFrozen(false)
+  expect(DAN).toBeFrozen(false)
+  expect(DAN.beta.out).toBeFrozen(false)
+  expect(DAN.beta.out.ref).toBe('b')
+}

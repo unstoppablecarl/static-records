@@ -3,7 +3,7 @@ import { type HasParent, lazy, type Lazy, lazyTree, recordTypeKey, staticRecords
 import { isProxy, objectKeysWithoutRef } from './_helpers/_helpers'
 import { PROXY_KEY } from '../../src/lazyProperties/proxy'
 import { getLazyProps, LAZY_PROPS } from '../../src/lazyProperties/trackLazyProps'
-import { makeLazyFiller } from '../../src/lazyProperties/lazyFiller'
+import { makeLazyFiller } from '../../src/lazyProperties/makeLazyFiller'
 import type { Rec } from '../../src/type-util'
 
 function makeExample() {
@@ -26,7 +26,7 @@ function makeExample() {
   }
 
   const DRIVERS = staticRecords<Driver, never, DriverInput>('DRIVER', {
-    filler: makeLazyFiller(),
+    filler: makeLazyFiller({ lazyTree: true }),
   })
 
   const carAndLocation = lazyTree<string, Driver>((parent) => {
@@ -153,7 +153,7 @@ describe('lazyFiller', () => {
 
   it('nested resolvers', () => {
     const DRIVERS = staticRecords('DRIVER', {
-      filler: makeLazyFiller(),
+      filler: makeLazyFiller({ lazyTree: true }),
     })
 
     const DAN: any = DRIVERS.define(
@@ -312,7 +312,7 @@ describe('lazyFiller', () => {
 
   it('dual nested resolvers', () => {
     const DRIVERS = staticRecords('DRIVER', {
-      filler: makeLazyFiller(),
+      filler: makeLazyFiller({ lazyTree: true }),
     })
 
     const DAN: any = DRIVERS.define(
@@ -495,7 +495,7 @@ describe('lazyFiller', () => {
 
   it('nested resolvers with plain object in between', () => {
     const DRIVERS = staticRecords('DRIVER', {
-      filler: makeLazyFiller(),
+      filler: makeLazyFiller({ lazyTree: true }),
     })
 
     const DAN = DRIVERS.define(
@@ -637,7 +637,7 @@ describe('lazyFiller', () => {
 
   it('makeLazyFiller defaults', () => {
     const THINGS = staticRecords('THINGS', {
-      filler: makeLazyFiller(),
+      filler: makeLazyFiller({ lazyTree: true }),
     })
 
     const JIM = THINGS.define(
@@ -765,5 +765,48 @@ describe('lazyFiller', () => {
     expect(DAN.stuff[2]).toBe('c')
 
     expect(DAN.extra).toEqual(['a', 'b', 'c'])
+  })
+
+  it('lazyTree() error', () => {
+    const DRIVERS = staticRecords('DRIVER', {
+      filler: makeLazyFiller(),
+    })
+
+    const DAN: any = DRIVERS.define(
+      'DAN',
+      () => ({
+        foo: {
+          extra: lazyTree(() => 'a'),
+        },
+      }),
+    )
+
+    expect(() => {
+      DRIVERS.lock()
+    }).toThrowError('lazyTree() resolver found a in makeLazyFiller() with option lazyTree = false')
+  })
+
+  it('lazy() does not get the args for lazyTree()', () => {
+    const DRIVERS = staticRecords('DRIVER', {
+      filler: makeLazyFiller(),
+    })
+
+    const DAN: any = DRIVERS.define(
+      'DAN',
+      () => ({
+        foo: {
+          // @ts-expect-error
+          extra: lazy((a, b) => {
+            expect(a).toBe(undefined)
+            expect(b).toBe(undefined)
+
+            return 'value'
+          }),
+        },
+      }),
+    )
+
+    DRIVERS.lock()
+    expect(DAN.foo.extra).toBe('value')
   })
 })

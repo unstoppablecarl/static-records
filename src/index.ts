@@ -3,7 +3,7 @@ export * from './staticRecords'
 export * from './staticRecordsFactory'
 export * from './recordType'
 export * from './lazyProperties'
-export { makeLazyFiller } from './lazyProperties/lazyFiller'
+export { makeLazyFiller } from './lazyProperties/makeLazyFiller'
 export { getLazyProps } from './lazyProperties/trackLazyProps'
 export type {
   NeverProtoKeys,

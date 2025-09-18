@@ -17,8 +17,8 @@ export function makeLazyFiller<
   Input extends Rec,
 >({
     freeze = false,
+    lazyTree = false,
     parentKey = 'parent',
-    lazyTree = true,
   }: {
   freeze?: boolean,
   parentKey?: string,
@@ -44,7 +44,7 @@ export function makeLazyFiller<
       }
       boundTargets.add(target)
 
-      let hasLazy = hasAnyLazyResolvers(target)
+      const hasLazy = hasAnyLazyResolvers(target)
       if (!hasLazy && freeze) {
         Object.freeze(target)
       }
@@ -83,11 +83,16 @@ export function makeLazyFiller<
       if (__DEV__) {
         trackLazyProp(target, prop)
       }
+      const isTreeResolver = isLazyTreeResolver(resolver)
+
+      if (!lazyTree && isTreeResolver) {
+        throw new Error('lazyTree() resolver found a in makeLazyFiller() with option lazyTree = false')
+      }
 
       Object.defineProperty(target, prop, {
         get() {
           let newValue
-          if (lazyTree && isLazyTreeResolver(resolver)) {
+          if (isTreeResolver) {
             newValue = resolver(
               makeProxy(target, parentProxy, prop, PARENT_TYPE, parentKey),
               rootProxy,
