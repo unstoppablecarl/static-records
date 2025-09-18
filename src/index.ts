@@ -1,4 +1,4 @@
-export * from './deepFreeze'
+export * from './frozenLocker'
 export * from './staticRecords'
 export * from './staticRecordsFactory'
 export * from './recordType'

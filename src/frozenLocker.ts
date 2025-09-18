@@ -1,18 +1,16 @@
 import { type HasId, isStaticRecord } from './recordType'
 import type { Rec } from './type-util'
-import type { Filler } from './staticRecords'
+import type { Locker } from './staticRecords'
 
-export function frozenFiller<
-  ProtoItem extends HasId,
-  Input extends Rec,
->(item: ProtoItem, input: Input): void {
-  Object.assign(item, input)
+export function frozenLocker<
+  Item extends HasId,
+>(item: Item): void {
   deepFreeze(item)
 }
 
-const _frozenFiller: Filler<HasId, Rec> = frozenFiller
+const _frozenLocker: Locker<HasId> = frozenLocker
 
-export function deepFreeze(obj: Rec) {
+export function deepFreeze(obj: Rec): void {
   const propNames = Reflect.ownKeys(obj)
 
   // always freeze the targeted obj

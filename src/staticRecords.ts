@@ -21,16 +21,17 @@ export type Definer<
 > = (item: ProtoItem) => Input
 
 export type Options<
+  Item extends HasId,
   ProtoItem extends HasId,
   Input extends Rec
 > = {
-  creator?: Creator<ProtoItem, Input>,
-  filler?: Filler<ProtoItem, Input>
+  creator?: Creator<ProtoItem>,
+  filler?: Filler<ProtoItem, Input>,
+  locker?: Locker<Item>
 }
 
 export type Creator<
-  ProtoItem extends HasId,
-  Input extends Rec
+  ProtoItem extends HasId
 > = (id: string, recordType: string) => ProtoItem
 
 export type Filler<
@@ -38,13 +39,17 @@ export type Filler<
   Input extends Rec,
 > = (item: ProtoItem, input: Input) => void
 
+export type Locker<
+  Item extends HasId,
+> = (item: Item) => void
+
 export function staticRecords<
   Item extends HasId,
   ProtoItem extends DefaultProtoItem = DefaultProtoItem,
   Input extends Rec = NeverProtoKeys<Item, ProtoItem>,
 >(
   recordType: string,
-  options?: Options<ProtoItem, Input>,
+  options?: Options<Item, ProtoItem, Input>,
 ): StaticRecords<Item, ProtoItem, Input> {
   type ItemWithKey = WithRecordType<Item>
   type Factory = Definer<ProtoItem, Input>
@@ -53,13 +58,9 @@ export function staticRecords<
   const definers: Map<string, Factory> = new Map()
   let locked = false
 
-  const creator: Creator<ProtoItem, Input> = options?.creator ?? ((id, recordType): ProtoItem => {
-    return {
-      id,
-      [recordTypeKey]: recordType,
-    } as ProtoItem
-  })
+  const creator: Creator<ProtoItem> = options?.creator ?? defaultCreator
   const filler = options?.filler ?? Object.assign
+  const locker = options?.locker
 
   return {
     define(id: string, definer: Factory): ItemWithKey {
@@ -84,7 +85,9 @@ export function staticRecords<
       if (locked) {
         throw new Error(`Cannot lock() when Static Record Type "${recordType}" is already locked.`)
       }
-      Object.values(staticData).forEach(item => {
+      let records = Object.values(staticData)
+
+      records.forEach(item => {
         const definer = definers.get(item.id) as Factory
         // at this point `item` is a ProtoItem,
         // but it is externally exposed as an Item type
@@ -93,6 +96,12 @@ export function staticRecords<
           definer(item as unknown as ProtoItem),
         )
       })
+
+      if (locker !== undefined) {
+        records.forEach(item => {
+          locker(item)
+        })
+      }
 
       definers.clear()
       locked = true
@@ -114,4 +123,11 @@ export function staticRecords<
     },
     toArray: () => Object.values(staticData),
   }
+}
+
+function defaultCreator<ProtoItem extends DefaultProtoItem>(id: string, recordType: string) {
+  return {
+    id,
+    [recordTypeKey]: recordType,
+  } as ProtoItem
 }

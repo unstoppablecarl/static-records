@@ -21,6 +21,7 @@ export function staticRecordsFactory<
   BaseProtoItem extends DefaultProtoItem = DefaultProtoItem,
   BaseInput extends Rec = never
 >(defaultOptions?: Options<
+  BaseItem,
   BaseProtoItem,
   MakeOptionsInput<BaseItem, BaseProtoItem, BaseInput>
 >) {
@@ -32,6 +33,7 @@ export function staticRecordsFactory<
   >(
     recordType: string,
     options?: Options<
+      Item,
       ProtoItem,
       MakeOptionsInput<Item, ProtoItem, IfNever<BaseInput, {}> & IfNever<Input, Omit<Item, keyof ProtoItem>>>
     >,
@@ -42,7 +44,7 @@ export function staticRecordsFactory<
     const opt = {
       ...defaultOptions,
       ...options,
-    } as Options<ProtoItem, MergedInput>
+    } as Options<Item, ProtoItem, MergedInput>
 
     return staticRecords<Item, ProtoItem, MergedInput>(recordType, opt)
   }
