@@ -5,15 +5,10 @@ type Widget = {
   readonly name: string
 }
 
-type ProtoWidget = DefaultProtoItem & {
-  readonly id: string,
-  readonly [recordTypeKey]: string
-}
-
 const WIDGETS = staticRecords<Widget>('Widget', {
   // creates initial object with id and recordType
   // default implementation shown
-  creator: (id: string, recordType: string): ProtoWidget => {
+  creator: (id: string, recordType: string): DefaultProtoItem => {
     return {
       id,
       // the recordTypeKey symbol is used by the
@@ -27,7 +22,7 @@ const WIDGETS = staticRecords<Widget>('Widget', {
   // default implementation shown
   filler: (
     // item is the object returned by the creator function
-    item: ProtoWidget,
+    item: DefaultProtoItem,
     // input is the object returned by the factory function passed to WIDGETS.define('MY_ID', () => input)
     // the type is determined by the second type argument passed to staticRecords()
     // the default input type is shown here
@@ -42,13 +37,10 @@ const WIDGETS = staticRecords<Widget>('Widget', {
     // this function must mutate the item object (not create a new one)
     // for object references to work correctly
   },
+  // after filling all records each finalized record is passed here
+  // this is where freezing objects can be done see: frozenFiller()
+  // has no default behavior
+  locker(item: Widget) {
+
+  },
 })
-
-const BOOP = WIDGETS.define(
-  'BOOP',
-  () => ({
-    name: 'Boop',
-  }),
-)
-
-WIDGETS.lock()
