@@ -192,8 +192,8 @@ PERFORMANCE.brand // 'goodyear'
 ```
 <!-- end-doc-gen -->
 
-### Creator and Filler Options
-The `creator` and `filler` options allow deeper control over object creation.
+### Static Record Options
+The `creator`, `filler`, and `locker` options allow deeper control over object creation.
 
 <!-- doc-gen CODE src="./readme/code/creator-and-filler-options.ts" -->
 ```ts
@@ -204,15 +204,10 @@ type Widget = {
   readonly name: string
 }
 
-type ProtoWidget = DefaultProtoItem & {
-  readonly id: string,
-  readonly [recordTypeKey]: string
-}
-
 const WIDGETS = staticRecords<Widget>('Widget', {
   // creates initial object with id and recordType
   // default implementation shown
-  creator: (id: string, recordType: string): ProtoWidget => {
+  creator: (id: string, recordType: string): DefaultProtoItem => {
     return {
       id,
       // the recordTypeKey symbol is used by the
@@ -226,7 +221,7 @@ const WIDGETS = staticRecords<Widget>('Widget', {
   // default implementation shown
   filler: (
     // item is the object returned by the creator function
-    item: ProtoWidget,
+    item: DefaultProtoItem,
     // input is the object returned by the factory function passed to WIDGETS.define('MY_ID', () => input)
     // the type is determined by the second type argument passed to staticRecords()
     // the default input type is shown here
@@ -241,16 +236,13 @@ const WIDGETS = staticRecords<Widget>('Widget', {
     // this function must mutate the item object (not create a new one)
     // for object references to work correctly
   },
+  // after filling all records each finalized record is passed here
+  // this is where freezing objects can be done see: frozenFiller()
+  // has no default behavior
+  locker(item: Widget) {
+
+  },
 })
-
-const BOOP = WIDGETS.define(
-  'BOOP',
-  () => ({
-    name: 'Boop',
-  }),
-)
-
-WIDGETS.lock()
 ```
 <!-- end-doc-gen -->
 
@@ -403,7 +395,7 @@ WIDGETS.lock()
 ```
 <!-- end-doc-gen -->
 
-### Factories and Default Options
+### Static Records Factories and Default Options
 
 A static records factory can be created to set reusable default options.
 <!-- doc-gen CODE src="./readme/code/static-records-factory.ts" test=true -->
@@ -522,74 +514,77 @@ TOWER_A.zone // 'Alpha'
 ```
 <!-- end-doc-gen -->
 
+### Resolver Arguments
+Resolver functions are passed the `protoItem` and  `recordType` arguments.
+The `protoItem` arg has the `id` and `[recordTypeKey]` symbol properties.
+The `recordType` is passed as the second arg for convenience.
+
+<!-- doc-gen CODE src="./readme/code/resolver-args.ts" test=true -->
+```ts
+import { type DefaultProtoItem, staticRecords } from 'static-records'
+
+type Person = {
+  readonly id: string,
+  readonly name: string,
+  readonly slug: string,
+}
+
+const PEOPLE = staticRecords<Person>('Person')
+
+const DAN = PEOPLE.define(
+  'DAN',
+  (protoItem: DefaultProtoItem, recordType: string) => ({
+    name: 'Dan',
+    slug: protoItem.id + '-' + recordType,
+  }),
+)
+PEOPLE.lock()
+
+DAN.id // 'DAN'
+DAN.name // 'Dan'
+DAN.slug // 'DAN-Person'
+```
+<!-- end-doc-gen -->
+
 ### Lazy Resolvers
 `makeLazyFiller()` creates a filler that can have properties resolve when they are first read.
 
 <!-- doc-gen CODE src="./readme/code/lazy-props.ts" test=true -->
 ```ts
-import { lazy, makeLazyFiller, staticRecords } from 'static-records'
+import { lazy, lazyTree, makeLazyFiller, staticRecords } from 'static-records'
 
-type ArmorVariant = {
+type Person = {
   readonly id: string,
   readonly name: string,
-  readonly stat: number,
-  readonly fireResistance: number,
+  readonly emergencyContactName: string,
 }
 
-const ARMOR_VARIANTS = staticRecords<ArmorVariant>('ArmorVariant', {
+const PEOPLE = staticRecords<Person>('Person', {
   filler: makeLazyFiller(),
 })
 
-const FIRE_RESISTANT = ARMOR_VARIANTS.define(
-  'FIRE_RESISTANT',
+
+const DAN = PEOPLE.define(
+  'DAN',
   () => ({
-    name: 'Fire Resistant',
-    stat: 0,
-    fireResistance: 3,
+    name: 'Dan',
+    emergencyContactName: lazy(() => SUE.name) as string,
   }),
 )
 
-ARMOR_VARIANTS.lock()
-
-type Armor = {
-  readonly id: string,
-  readonly name: string,
-  readonly stat: number,
-  readonly fireResistance: number,
-}
-
-const ARMOR = staticRecords<Armor>('Armor', {
-  filler: makeLazyFiller(),
-})
-
-const FIRE_RESISTANT_LEATHER = ARMOR.define(
-  'FIRE_RESISTANT_LEATHER',
-  () => makeVariant(LEATHER, FIRE_RESISTANT),
-)
-
-const LEATHER = ARMOR.define(
-  'LEATHER',
+const SUE = PEOPLE.define(
+  'SUE',
   () => ({
-    name: 'Leather',
-    stat: 1,
-    fireResistance: 1,
+    name: 'Sue',
+    emergencyContactName: lazy(() => DAN.name) as string,
   }),
 )
+PEOPLE.lock()
 
-ARMOR.lock()
-
-function makeVariant(armor: Armor, variant: ArmorVariant) {
-  return {
-    name: lazy(() => `${variant.name} ${armor.name}`) as string,
-    stat: lazy(() => armor.stat + variant.stat) as number,
-    fireResistance: lazy(() => armor.fireResistance + variant.fireResistance) as number,
-  }
-}
-
-FIRE_RESISTANT_LEATHER.id // 'FIRE_RESISTANT_LEATHER'
-FIRE_RESISTANT_LEATHER.name // 'Fire Resistant Leather'
-FIRE_RESISTANT_LEATHER.stat // 1
-FIRE_RESISTANT_LEATHER.stat // 4
+DAN.id // 'DAN'
+DAN.name // 'Dan'
+DAN.emergencyContactName // 'Sue'
+SUE.emergencyContactName // 'Dan'
 ```
 <!-- end-doc-gen -->
 
