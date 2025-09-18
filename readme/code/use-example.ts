@@ -20,8 +20,8 @@ export const TESTS: TestCase[] = [
     expected: 'SUE',
   },
   {
-    key: 'JIM.emergency_contact',
-    actual: JIM.emergency_contact,
+    key: 'JIM.emergencyContact',
+    actual: JIM.emergencyContact,
     expected: null,
   },
   {

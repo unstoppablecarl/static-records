@@ -4,7 +4,7 @@ export type Person = {
   readonly id: string;
   readonly name: string;
   readonly manager: Person | null;
-  readonly emergency_contact: Person | null;
+  readonly emergencyContact: Person | null;
 }
 
 export const PEOPLE = staticRecords<Person>(/* Record Type Name: */ 'Person')
@@ -14,7 +14,7 @@ export const JIM = PEOPLE.define(
   () => ({
     name: 'Jim',
     manager: SUE,
-    emergency_contact: null,
+    emergencyContact: null,
   }),
 )
 
@@ -23,7 +23,7 @@ export const SUE = PEOPLE.define(
   () => ({
     name: 'Sue',
     manager: null,
-    emergency_contact: JIM,
+    emergencyContact: JIM,
   }),
 )
 // locks the data with deep Object.freeze()
