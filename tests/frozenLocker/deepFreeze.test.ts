@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { deepFreeze } from '../src/deepFreeze'
-import { recordTypeKey } from '../src'
+import { deepFreeze } from '../../src/frozenLocker'
+import { recordTypeKey } from '../../src'
 
 describe('deepFreeze() unit tests', async () => {
   function func() {

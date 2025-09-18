@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { frozenFiller, staticRecords } from '../../src'
+import { frozenLocker, recordTypeKey, staticRecords } from '../../src'
 
-function makeExample() {
+describe('frozenLocker', () => {
   type Driver = {
     id: string,
     name: string,
@@ -24,7 +24,7 @@ function makeExample() {
   }
 
   const DRIVERS = staticRecords<Driver, never, DriverInput>('DRIVER', {
-    filler: frozenFiller,
+    locker: frozenLocker,
   })
 
   const DAN = DRIVERS.define(
@@ -54,15 +54,34 @@ function makeExample() {
 
   DRIVERS.lock()
 
-  return { DAN, LISA, DRIVERS }
-}
-
-describe('frozenFiller', () => {
   it('objects are frozen', () => {
-    const { DAN, LISA } = makeExample()
+
+    expect(DAN).toEqual({
+      id: 'DAN',
+      name: 'Dan',
+      meta: {
+        foo: {
+          some: 'thing',
+        },
+      },
+      [recordTypeKey]: 'DRIVER',
+    })
+
+    expect(LISA).toEqual({
+      id: 'LISA',
+      name: 'Lisa',
+      meta: {
+        foo: {
+          some: 'thing',
+        },
+      },
+      backup: DAN,
+      [recordTypeKey]: 'DRIVER',
+    })
 
     expect(DAN).toBeFrozen(true)
     expect(DAN.meta).toBeFrozen(true)
+    console.log(DAN)
     expect(DAN.meta.foo).toBeFrozen(true)
     expect(LISA).toBeFrozen(true)
     expect(LISA.backup).toBeFrozen(true)

@@ -3,7 +3,7 @@ import { lazy, type Lazy, makeLazyFiller, recordTypeKey, staticRecords } from '.
 import { isProxy } from './_helpers/_helpers'
 import { getLazyProps } from '../../src/lazyProperties/trackLazyProps'
 
-describe('frozenFiller', () => {
+describe('makeLazyFiller frozen', () => {
   type Driver = {
     id: string,
     name: string,
