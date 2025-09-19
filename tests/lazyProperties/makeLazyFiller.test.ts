@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { type HasParent, lazy, type Lazy, lazyTree, recordTypeKey, staticRecords } from '../../src'
+import { type HasParent, lazy, type LazyAny, lazyTree, recordTypeKey, staticRecords } from '../../src'
 import { isProxy, objectKeysWithoutRef } from './_helpers/_helpers'
 import { PROXY_KEY } from '../../src/lazyProperties/proxy'
 import { getLazyProps, LAZY_PROPS } from '../../src/lazyProperties/trackLazyProps'
@@ -19,9 +19,9 @@ function makeExample() {
   type DriverInput = {
     name: string,
     age: number,
-    carName: Lazy<string>,
-    location: Lazy<string>,
-    carAndLocation: Lazy<string, Driver>,
+    carName: LazyAny<string, Driver>,
+    location: LazyAny<string, Driver>,
+    carAndLocation: LazyAny<string, Driver>,
     backup?: Driver,
   }
 
@@ -29,7 +29,7 @@ function makeExample() {
     filler: makeLazyFiller({ lazyTree: true }),
   })
 
-  const carAndLocation = lazyTree<string, Driver>((parent) => {
+  const carAndLocation = lazyTree<string, Driver>((parent, root) => {
     return `${parent.carName}-${parent.location}`
   })
 

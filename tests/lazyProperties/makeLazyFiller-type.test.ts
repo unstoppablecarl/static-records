@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { recordTypeKey, staticRecords } from '../../src'
+import { type LazyAny, recordTypeKey, staticRecords } from '../../src'
 import { makeLazyFiller } from '../../src/lazyProperties/makeLazyFiller'
 import { lazy, type Lazy, lazyTree } from '../../src/lazyProperties'
 
@@ -11,7 +11,7 @@ describe('lazyFiller types', () => {
     }
 
     type VehicleInput = {
-      name: Lazy<string>,
+      name: LazyAny<string>,
     }
 
     const DRIVERS = staticRecords<Vehicle, never, VehicleInput>('DRIVER', {

@@ -1,5 +1,7 @@
 // Stryker disable next-line all
 /* v8 ignore next -- @preserve */
+import type { NeverProtoKeys } from './type-util'
+
 export const recordTypeKey: unique symbol = Symbol(__DEV__ ? 'Record Type' : '')
 
 export const isStaticRecord = (obj: any) => obj?.[recordTypeKey] !== undefined
@@ -14,3 +16,9 @@ export type HasId = {
 }
 export type DefaultProtoItem = HasId & HasRecordKey
 export type WithRecordType<T extends HasId> = T & HasRecordKey
+
+// helper for generating the default Input type that staticRecords would generate
+export type MakeInput<
+  Item extends HasId,
+  ProtoItem extends DefaultProtoItem = DefaultProtoItem
+> = NeverProtoKeys<Item, ProtoItem>

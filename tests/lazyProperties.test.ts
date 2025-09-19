@@ -28,8 +28,8 @@ describe('lazyProperties', async () => {
   it('lazy()', async () => {
     const target = lazy(() => ({
       foo: 'bar',
-    }))
-    // @ts-expect-error
+    })) as LazyResolver<{}>
+
     expect(target[LAZY_RESOLVER]).toEqual(LazyResolverType.DEFAULT)
   })
 
