@@ -34,8 +34,10 @@ export type LazyAny<
   Root extends HasParent | undefined = HasParent | undefined,
 > = LazyResolver<T> | LazyTreeResolver<T, Parent, Root> | T
 
+// used in record input properties that can optionally use lazy()
 export type Lazy<T = unknown> = LazyResolver<T> | T
 
+// create a lazy resolver
 export function lazy<T = any>(resolver: LazyResolverFunction<T>) {
   return Object.assign(resolver, { [LAZY_RESOLVER]: LazyResolverType.DEFAULT }) as LazyResolver<T> | T
 }
@@ -66,6 +68,7 @@ export type HasParent = Rec & {
   parent?: HasParent
 }
 
+// argument passed into lazyTree(resolver: LazyTreeResolverFunction)
 export type LazyTreeResolverFunction<
   T = unknown,
   Parent extends HasParent | undefined = HasParent | undefined,
@@ -75,7 +78,8 @@ export type LazyTreeResolverFunction<
   root: Root,
 ) => T
 
-// this differentiates between a resolver function and
+// return value of lazyTree()
+// the interface differentiates between a resolver function and
 // its return value which may be a function
 export interface LazyTreeResolver<
   T = unknown,
@@ -85,7 +89,7 @@ export interface LazyTreeResolver<
   [LAZY_RESOLVER]: LazyResolverType.TREE
 }
 
-// a resolver or the resolved value
+// a tree resolver or the resolved value
 export type LazyTree<
   T = unknown,
   Parent extends HasParent | undefined = HasParent | undefined,
