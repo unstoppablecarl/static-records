@@ -11,10 +11,12 @@ export enum LazyResolverType {
 
 export type LazyResolverFunction<T = unknown> = () => T
 
+// return value of lazy(() => {})
 export interface LazyResolver<T = unknown> extends LazyResolverFunction<T> {
   [LAZY_RESOLVER]: LazyResolverType.DEFAULT
 }
 
+// recursively convert all property types to Lazy<T[K]>
 export type OptionallyLazy<T> = {
   [K in keyof T]:
   // keep never
