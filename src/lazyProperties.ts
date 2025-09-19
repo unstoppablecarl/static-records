@@ -98,6 +98,20 @@ export type LazyTree<
   Root extends HasParent | undefined = HasParent | undefined,
 > = LazyTreeResolver<T, Parent, Root> | T
 
+export type OptionallyLazyTree<
+  T = unknown,
+  Root extends HasParent | undefined = HasParent | undefined,
+> = {
+  [K in keyof T]:
+  // keep never
+  T[K] extends never
+    ? never
+    //recurse objects
+    : T[K] extends object
+      ? OptionallyLazyTree<T[K], Root>
+      : LazyTree<T[K], any, Root>;
+};
+
 export function lazyTree<
   T = any,
   Parent extends HasParent | undefined = HasParent | undefined,
