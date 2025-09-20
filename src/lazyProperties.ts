@@ -44,11 +44,7 @@ export function isLazyTreeResolver<T>(
   return typeof value === 'function' && (value as any)[LAZY_RESOLVER] === LazyResolverType.TREE
 }
 
-export function hasAnyLazyResolvers<
-  T = unknown,
-  Parent extends HasParent | undefined = HasParent | undefined,
-  Root extends RootBase | undefined = RootBase | undefined
->(target: Rec): boolean {
+export function hasAnyLazyResolvers(target: Rec): boolean {
   return !!Object.values(target).find(isAnyLazyResolver)
 }
 
@@ -56,7 +52,7 @@ export type HasParent = Rec & {
   parent?: HasParent
 }
 
-export type RootBase = HasParent & HasId
+export type RootBase = Rec & HasId
 
 // argument passed into lazyTree(resolver: LazyTreeResolverFunction)
 export type LazyTreeResolverFunction<
