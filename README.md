@@ -554,26 +554,21 @@ This allows referencing the properties of other static records directly.
 
 <!-- doc-gen CODE src="./readme/code/lazy-props.ts" test=true -->
 ```ts
-import { type Lazy, lazy, makeLazyFiller, staticRecords } from 'static-records'
+import { lazy, type MakeInput, makeLazyFiller, staticRecords } from 'static-records'
 
 type Person = {
   readonly id: string,
   readonly name: string,
   readonly emergencyContactName: string,
   readonly deep: {
-    readonly property: string
+    readonly val: string,
+    readonly property: {
+      readonly text: string,
+    }
   }
 }
-
-type PersonInput = {
-  readonly name: string,
-  readonly emergencyContactName: Lazy<string>,
-  readonly deep: {
-    readonly property: Lazy<string>
-  }
-}
-
-const PEOPLE = staticRecords<Person, never, PersonInput>('Person', {
+type PersonInput = MakeInput<Person>
+const PEOPLE = staticRecords<Person>('Person', {
   filler: makeLazyFiller(),
 })
 
@@ -581,11 +576,12 @@ const DAN = PEOPLE.define(
   'DAN',
   () => ({
     name: 'Dan',
-    emergencyContactName: lazy<Person['emergencyContactName']>(() => SUE.name),
+    emergencyContactName: lazy<PersonInput['emergencyContactName']>(() => SUE.name),
     deep: {
-      property: lazy<Person['deep']['property']>(() => {
-        return 'foo'
-      }),
+      val: 'foo',
+      property: {
+        text: 'whatever',
+      },
     },
   }),
 )
@@ -595,11 +591,14 @@ const SUE = PEOPLE.define(
   () => ({
     name: 'Sue',
     emergencyContactName: lazy(() => DAN.name),
-    deep: {
-      // Lazy types are optional
-      // so this can be a Lazy<string> or string
-      property: 'bar',
-    },
+    deep: lazy<PersonInput['deep']>(() => {
+      return {
+        val: 'something',
+        property: {
+          text: lazy<PersonInput['deep']['property']['text']>(() => DAN.name),
+        },
+      }
+    }),
   }),
 )
 PEOPLE.lock()
@@ -621,52 +620,11 @@ const PEOPLE = staticRecords<Person>('Person', {
 })
 ```
 
-#### Lazy Input Types
-Lazy types are only used on record input types.
-
-<!-- doc-gen CODE src="./readme/code/lazy-props-auto-generate-input.ts" -->
-```ts
-import { type Lazy, type MakeInput, makeLazyFiller, type OptionallyLazy, staticRecords } from 'static-records'
-
-type Person = {
-  readonly id: string,
-  readonly name: string,
-  readonly number: number,
-  readonly deep: {
-    readonly property: string
-  }
-}
-
-// use this generate the same input type
-// that staticRecords<Person>() would use by default
-type DefaultPersonInput = MakeInput<Person>
-
-// allow all properties to be lazy
-type PersonInput = OptionallyLazy<DefaultPersonInput>
-
-// this is what PersonInput looks like
-type PersonInputEquivalent = {
-  readonly id: Lazy<string>,
-  readonly name: Lazy<string>,
-  readonly number: Lazy<number>,
-  readonly deep: Lazy<{
-    readonly property: Lazy<string>
-  }>
-}
-
-// provide the input type as 3rd arg
-const PEOPLE = staticRecords<Person, never, PersonInput>('Person', {
-  filler: makeLazyFiller(),
-})
-```
-<!-- end-doc-gen -->
-
 #### Lazy Tree Resolvers
 
 <!-- doc-gen CODE src="./readme/code/lazy-tree.ts" test=true -->
 ```ts
-import { lazyTree, makeLazyFiller, staticRecords } from 'static-records'
-import type { HasParent } from 'static-records'
+import { lazyTree, makeLazyFiller, staticRecords, type To } from 'static-records'
 
 type Person = {
   readonly id: string,
@@ -705,28 +663,39 @@ const DAN = PEOPLE.define(
     name: 'Dan',
     extra: {
       id: 'abc',
-      slug: lazyTree((parent: Person['extra'], root: Person) => {
+      slug: lazyTree((parent, root) => {
         return {
-          slugId: 'slugId: ' + parent.id,
+          slugId: 'slugId: ' + parent?.id,
           rootName: 'rootName: ' + root.name,
         }
-      }) as Person['extra']['slug'],
+      }),
       deep: {
-        property: lazyTree((parent: Person['extra']['deep'] & HasParent, root: Person) => {
+        property: lazyTree<
+          // return type
+          Person['extra']['deep']['property'],
+          // parent
+          Person['extra']['deep'],
+          // root,
+          Person
+        >((parent1, root) => {
           return {
-            idFromParent: 'idFromParent: ' + parent?.parent?.id,
-            idFromRoot: 'idFromRoot: ' + root.extra.id,
+            idFromParent: 'idFromParent: ' + parent1.parent?.id,
+            idFromRoot: 'idFromRoot: ' + (root as Person).extra.id,
             child: {
-              even: lazyTree((parent: Person['extra']['deep']['property']['child'] & HasParent) => {
+              even: lazyTree<
+                // use the To<> helper to provide the return type, parent, and root automatically
+                // To<> will autocomplete the dot path properties based on the first arg (Person)
+                To<Person, 'extra.deep.property.child.even'>
+              >((parent) => {
                 return {
                   deeper: {
                     idFromAncestor: 'idFromAncestor: ' + parent?.parent?.idFromParent,
                   },
                 }
-              }) as Person['extra']['deep']['property']['child']['even'],
+              }),
             },
           }
-        }) as Person['extra']['deep']['property'],
+        }),
       },
     },
   }),

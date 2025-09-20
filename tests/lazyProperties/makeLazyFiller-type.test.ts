@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { type LazyAny, recordTypeKey, staticRecords } from '../../src'
+import { recordTypeKey, staticRecords } from '../../src'
 import { makeLazyFiller } from '../../src/lazyProperties/makeLazyFiller'
-import { lazy, type Lazy, lazyTree } from '../../src/lazyProperties'
+import { lazy, lazyTree } from '../../src/lazyProperties'
 
 describe('lazyFiller types', () => {
   it('mixed lazy types', () => {
@@ -10,11 +10,7 @@ describe('lazyFiller types', () => {
       readonly name: string,
     }
 
-    type VehicleInput = {
-      name: LazyAny<string>,
-    }
-
-    const DRIVERS = staticRecords<Vehicle, never, VehicleInput>('DRIVER', {
+    const DRIVERS = staticRecords<Vehicle>('DRIVER', {
       filler: makeLazyFiller({ lazyTree: true }),
     })
 

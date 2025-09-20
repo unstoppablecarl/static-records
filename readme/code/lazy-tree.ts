@@ -1,6 +1,5 @@
-import { lazyTree, makeLazyFiller, staticRecords } from '../../src'
+import { lazyTree, makeLazyFiller, staticRecords, type To } from '../../src'
 import type { TestCase } from '../types'
-import type { HasParent } from 'static-records'
 
 type Person = {
   readonly id: string,
@@ -39,28 +38,39 @@ const DAN = PEOPLE.define(
     name: 'Dan',
     extra: {
       id: 'abc',
-      slug: lazyTree((parent: Person['extra'], root: Person) => {
+      slug: lazyTree((parent, root) => {
         return {
-          slugId: 'slugId: ' + parent.id,
+          slugId: 'slugId: ' + parent?.id,
           rootName: 'rootName: ' + root.name,
         }
-      }) as Person['extra']['slug'],
+      }),
       deep: {
-        property: lazyTree((parent: Person['extra']['deep'] & HasParent, root: Person) => {
+        property: lazyTree<
+          // return type
+          Person['extra']['deep']['property'],
+          // parent
+          Person['extra']['deep'],
+          // root,
+          Person
+        >((parent1, root) => {
           return {
-            idFromParent: 'idFromParent: ' + parent?.parent?.id,
-            idFromRoot: 'idFromRoot: ' + root.extra.id,
+            idFromParent: 'idFromParent: ' + parent1.parent?.id,
+            idFromRoot: 'idFromRoot: ' + (root as Person).extra.id,
             child: {
-              even: lazyTree((parent: Person['extra']['deep']['property']['child'] & HasParent) => {
+              even: lazyTree<
+                // use the To<> helper to provide the return type, parent, and root automatically
+                // To<> will autocomplete the dot path properties based on the first arg (Person)
+                To<Person, 'extra.deep.property.child.even'>
+              >((parent) => {
                 return {
                   deeper: {
                     idFromAncestor: 'idFromAncestor: ' + parent?.parent?.idFromParent,
                   },
                 }
-              }) as Person['extra']['deep']['property']['child']['even'],
+              }),
             },
           }
-        }) as Person['extra']['deep']['property'],
+        }),
       },
     },
   }),

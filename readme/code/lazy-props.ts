@@ -1,4 +1,4 @@
-import { type Lazy, lazy, makeLazyFiller, staticRecords } from '../../src'
+import { lazy, type MakeInput, makeLazyFiller, staticRecords } from '../../src'
 import type { TestCase } from '../types'
 
 type Person = {
@@ -6,19 +6,14 @@ type Person = {
   readonly name: string,
   readonly emergencyContactName: string,
   readonly deep: {
-    readonly property: string
+    readonly val: string,
+    readonly property: {
+      readonly text: string,
+    }
   }
 }
-
-type PersonInput = {
-  readonly name: string,
-  readonly emergencyContactName: Lazy<string>,
-  readonly deep: {
-    readonly property: Lazy<string>
-  }
-}
-
-const PEOPLE = staticRecords<Person, never, PersonInput>('Person', {
+type PersonInput = MakeInput<Person>
+const PEOPLE = staticRecords<Person>('Person', {
   filler: makeLazyFiller(),
 })
 
@@ -26,11 +21,12 @@ const DAN = PEOPLE.define(
   'DAN',
   () => ({
     name: 'Dan',
-    emergencyContactName: lazy<Person['emergencyContactName']>(() => SUE.name),
+    emergencyContactName: lazy<PersonInput['emergencyContactName']>(() => SUE.name),
     deep: {
-      property: lazy<Person['deep']['property']>(() => {
-        return 'foo'
-      }),
+      val: 'foo',
+      property: {
+        text: 'whatever',
+      },
     },
   }),
 )
@@ -40,11 +36,14 @@ const SUE = PEOPLE.define(
   () => ({
     name: 'Sue',
     emergencyContactName: lazy(() => DAN.name),
-    deep: {
-      // Lazy types are optional
-      // so this can be a Lazy<string> or string
-      property: 'bar',
-    },
+    deep: lazy<PersonInput['deep']>(() => {
+      return {
+        val: 'something',
+        property: {
+          text: lazy<PersonInput['deep']['property']['text']>(() => DAN.name),
+        },
+      }
+    }),
   }),
 )
 PEOPLE.lock()

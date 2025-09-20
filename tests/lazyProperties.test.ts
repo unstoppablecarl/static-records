@@ -7,10 +7,9 @@ import {
   isLazyTreeResolver,
   lazy,
   LAZY_RESOLVER,
-  type LazyResolver,
   LazyResolverType,
   lazyTree,
-  type LazyTreeResolver,
+  type RootBase,
 } from '../src'
 
 const invalidValues = [
@@ -28,8 +27,9 @@ describe('lazyProperties', async () => {
   it('lazy()', async () => {
     const target = lazy(() => ({
       foo: 'bar',
-    })) as LazyResolver<{}>
+    }))
 
+    // @ts-expect-error
     expect(target[LAZY_RESOLVER]).toEqual(LazyResolverType.DEFAULT)
   })
 
@@ -105,7 +105,7 @@ describe('lazyProperties', async () => {
         return 'foo'
       })
 
-      expectTypeOf(target).toEqualTypeOf<LazyResolver<string> | string>()
+      expectTypeOf(target).toEqualTypeOf<string>()
     })
 
     it('lazy() provided generics', async () => {
@@ -119,20 +119,58 @@ describe('lazyProperties', async () => {
         }
       })
 
-      expectTypeOf<typeof target>().toEqualTypeOf<Input | LazyResolver<Input>>()
+      expectTypeOf<typeof target>().toEqualTypeOf<Input>()
     })
   })
 
   describe('lazyTree() type checks', async () => {
-    it('lazyTree() inferred from resolver', async () => {
+    it('lazyTree() no generics', async () => {
       const target = lazyTree((parent, root) => {
         expectTypeOf(parent).toEqualTypeOf<HasParent | undefined>()
-        expectTypeOf(root).toEqualTypeOf<HasParent | undefined>()
+        expectTypeOf(root).toEqualTypeOf<RootBase>()
 
         return 'foo'
       })
 
-      expectTypeOf(target).toEqualTypeOf<LazyTreeResolver<string> | string>()
+      expectTypeOf(target).toEqualTypeOf<string>()
+    })
+
+    it('lazyTree<T>()', async () => {
+      type T = {
+        foo: string
+      }
+
+      const target = lazyTree<T>((parent, root) => {
+        expectTypeOf(parent).toEqualTypeOf<HasParent | undefined>()
+        expectTypeOf(root).toEqualTypeOf<RootBase>()
+
+        return {
+          foo: 'bar',
+        }
+      })
+
+      expectTypeOf(target).toEqualTypeOf<T>()
+    })
+
+    it('lazyTree<T, Parent>()', async () => {
+      type T = {
+        foo: string
+      }
+
+      type Parent = HasParent & {
+        parentName: string
+      }
+
+      const target = lazyTree<T, Parent>((parent, root) => {
+        expectTypeOf(parent).toEqualTypeOf<Parent>()
+        expectTypeOf(root).toEqualTypeOf<RootBase>()
+
+        return {
+          foo: 'bar',
+        }
+      })
+
+      expectTypeOf(target).toEqualTypeOf<T>()
     })
 
     it('lazyTree() provided generics', async () => {
@@ -142,7 +180,8 @@ describe('lazyProperties', async () => {
       type Parent = HasParent & {
         parentName: string,
       }
-      type Root = HasParent & {
+      type Root = RootBase & {
+        id: string,
         rootName: string,
       }
 
@@ -155,7 +194,7 @@ describe('lazyProperties', async () => {
         }
       })
 
-      expectTypeOf<typeof target>().toEqualTypeOf<Input | LazyTreeResolver<Input, Parent, Root>>()
+      expectTypeOf<typeof target>().toEqualTypeOf<Input>()
     })
   })
 })

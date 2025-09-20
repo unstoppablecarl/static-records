@@ -1,6 +1,12 @@
 import { type HasId, isStaticRecord } from '../recordType'
 import type { Rec } from '../type-util'
-import { hasAnyLazyResolvers, type HasParent, isAnyLazyResolver, isLazyTreeResolver } from '../lazyProperties'
+import {
+  hasAnyLazyResolvers,
+  type HasParent,
+  isAnyLazyResolver,
+  isLazyTreeResolver,
+  type RootBase,
+} from '../lazyProperties'
 import type { Filler } from '../staticRecords'
 import { makeProxy } from './proxy'
 import { trackLazyProp, untrackLazyProp } from './trackLazyProps'
@@ -37,7 +43,7 @@ export function makeLazyFiller<
     function bindLazyProps(
       target: Rec,
       parentProxy?: HasParent,
-      rootProxy?: HasParent,
+      rootProxy?: RootBase,
     ) {
       if (boundTargets.has(target)) {
         return
@@ -52,7 +58,7 @@ export function makeLazyFiller<
       for (const prop of Reflect.ownKeys(target)) {
         const value = target[prop]
 
-        let newRootProxy = rootProxy ?? makeProxy(root as Rec, undefined, prop, ROOT_TYPE, parentKey)
+        let newRootProxy = rootProxy ?? makeProxy(root as Rec, undefined, prop, ROOT_TYPE, parentKey) as RootBase
 
         if (hasLazy) {
           if (isAnyLazyResolver(value)) {
@@ -76,7 +82,7 @@ export function makeLazyFiller<
     function setupLazyProperty(
       target: Rec,
       prop: string | symbol,
-      rootProxy: HasParent,
+      rootProxy: RootBase,
       resolver: Function,
       parentProxy?: HasParent,
     ) {
@@ -129,7 +135,7 @@ export function makeLazyFiller<
     function processNonLazyProperty(
       target: Rec,
       prop: string | symbol,
-      rootProxy: HasParent | undefined,
+      rootProxy: RootBase | undefined,
       value: any,
       parentProxy?: HasParent,
     ) {
