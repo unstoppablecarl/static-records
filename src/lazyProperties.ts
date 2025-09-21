@@ -48,8 +48,11 @@ export function hasAnyLazyResolvers(target: Rec): boolean {
   return !!Object.values(target).find(isAnyLazyResolver)
 }
 
-export type HasParent = Rec & {
-  parent?: HasParent
+export type HasParent<
+  Target extends Rec = Rec,
+  ParentKey extends string = 'parent',
+> = Target & {
+  [K in ParentKey]?: HasParent<Rec, ParentKey>
 }
 
 export type RootBase = Rec & HasId
@@ -75,35 +78,63 @@ export interface LazyTreeResolver<
   [LAZY_RESOLVER]: LazyResolverType.TREE
 }
 
-export type To<T, P extends DotPaths<T>> = {
+export type To<
+  T,
+  P extends DotPaths<T>,
+  ParentKey extends string = 'parent'
+> = {
   __brand_LazyTreePath: true,
   path: Path<T, P>,
-  parent: PathParent<T, P>
+  parent: PathParent<T, P, ParentKey>
   root: T,
 }
 
+export function lazyTree<PathTree>(
+  resolver: PathTree extends To<any, any, any>
+    ? PathTree extends { __brand_LazyTreePath: true }
+      ? LazyTreeResolverFunction<PathTree['path'], PathTree['parent'], PathTree['root']>
+      : never
+    : never,
+): PathTree extends To<any, any, any> ? PathTree['path'] : never;
+
+// Parent can be HasParent and work correctly
 export function lazyTree<
   T = never,
-  Parent extends HasParent | undefined = never,
-  Root extends RootBase = never
+  Parent extends Rec | undefined = never,
+  Root extends RootBase = never,
+  // NOTE: If ParentKey is provided it will transform Parent:
+  // - HasParent types get their ParentKey replaced
+  // - Rec types get wrapped in HasParent<Parent, ParentKey>
+  ParentKey extends string = 'parent'
 >(
   resolver: (
-    // if parent not provided use HasParent | undefined
-    parent: [Parent] extends [never] ? HasParent | undefined : Parent & HasParent,
+    // if Parent is not provided
+    parent: [Parent] extends [never]
+      // use as Parent default
+      ? HasParent<Rec, ParentKey> | undefined
+      // if Parent is a HasParent type, extract its Target type
+      : Parent extends HasParent<infer InferredTarget, infer _ParentKey>
+        // rebuild HasParent using extracted InferredTarget but with ParentKey
+        ? HasParent<InferredTarget, ParentKey>
+        // if Parent is explicitly undefined
+        : Parent extends undefined
+          ? undefined
+          : Parent extends Rec
+            // wrap Parent in HasParent
+            ? HasParent<Parent, ParentKey>
+            // should never happen given our constraints
+            : never,
     // if root not provided use RootBase
-    root: [Root] extends [never] ? RootBase : Root
+    root: [Root] extends [never] ? RootBase : Root,
     // if T not provided use any
     // T will actually be ReturnType<typeof resolver> not 'any'
-  ) => ([T] extends [never] ? any : T)
+  ) => ([T] extends [never] ? any : T),
   // if T not provided use any
   // T will actually be ReturnType<typeof resolver> not 'any'
 ): [T] extends [never] ? any : T;
 
-export function lazyTree<PathTree extends To<any, any>>(
-  resolver: LazyTreeResolverFunction<PathTree['path'], PathTree['parent'], PathTree['root']>
-): PathTree['path'];
-
 // create a lazy tree resolver
 export function lazyTree(resolver: any): any {
-  return Object.assign(resolver, { [LAZY_RESOLVER]: LazyResolverType.TREE });
+  return Object.assign(resolver, { [LAZY_RESOLVER]: LazyResolverType.TREE })
 }
+

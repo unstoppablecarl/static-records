@@ -81,7 +81,6 @@ describe('frozenLocker', () => {
 
     expect(DAN).toBeFrozen(true)
     expect(DAN.meta).toBeFrozen(true)
-    console.log(DAN)
     expect(DAN.meta.foo).toBeFrozen(true)
     expect(LISA).toBeFrozen(true)
     expect(LISA.backup).toBeFrozen(true)

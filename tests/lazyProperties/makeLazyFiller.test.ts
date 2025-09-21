@@ -239,6 +239,7 @@ describe('lazyFiller', () => {
                 street: '401 test st.',
                 extra: lazyTree((parent, root) => {
 
+                  parent?.parent
                   let expectedParent = {
                     street: '401 test st.',
                     extra: undefined,

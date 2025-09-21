@@ -9,8 +9,15 @@ import {
   LAZY_RESOLVER,
   LazyResolverType,
   lazyTree,
+  makeLazyFiller,
+  recordTypeKey,
   type RootBase,
+  staticRecords,
+  type To,
 } from '../src'
+import type { Rec } from '../src/type-util'
+import { PROXY_KEY } from '../src/lazyProperties/proxy'
+import { LAZY_PROPS } from '../src/lazyProperties/trackLazyProps'
 
 const invalidValues = [
   null,
@@ -23,8 +30,8 @@ const invalidValues = [
   },
 ]
 
-describe('lazyProperties', async () => {
-  it('lazy()', async () => {
+describe('lazyProperties', () => {
+  it('lazy()', () => {
     const target = lazy(() => ({
       foo: 'bar',
     }))
@@ -33,7 +40,7 @@ describe('lazyProperties', async () => {
     expect(target[LAZY_RESOLVER]).toEqual(LazyResolverType.DEFAULT)
   })
 
-  it('isLazyDefaultResolver()', async () => {
+  it('isLazyDefaultResolver()', () => {
     const def = lazy(() => ({
       foo: 'bar',
     }))
@@ -48,7 +55,7 @@ describe('lazyProperties', async () => {
     })
   })
 
-  it('lazyTree()', async () => {
+  it('lazyTree()', () => {
     const target = lazyTree(() => ({
       foo: 'bar',
     }))
@@ -56,7 +63,7 @@ describe('lazyProperties', async () => {
     expect(target[LAZY_RESOLVER]).toEqual(LazyResolverType.TREE)
   })
 
-  it('isLazyTreeResolver()', async () => {
+  it('isLazyTreeResolver()', () => {
     const def = lazy(() => ({
       foo: 'bar',
     }))
@@ -71,7 +78,7 @@ describe('lazyProperties', async () => {
     })
   })
 
-  it('isAnyLazyResolver()', async () => {
+  it('isAnyLazyResolver()', () => {
     const def = lazy(() => ({
       foo: 'bar',
     }))
@@ -88,7 +95,7 @@ describe('lazyProperties', async () => {
     })
   })
 
-  it('hasAnyLazyResolvers()', async () => {
+  it('hasAnyLazyResolvers()', () => {
     const target = {
       name: 'jim',
       extra: lazy(() => ({
@@ -99,8 +106,8 @@ describe('lazyProperties', async () => {
     expect(hasAnyLazyResolvers({ foo: 'bar' })).toEqual(false)
   })
 
-  describe('lazy() type checks', async () => {
-    it('lazy() inferred from resolver', async () => {
+  describe('lazy() type checks', () => {
+    it('lazy() inferred from resolver', () => {
       const target = lazy(() => {
         return 'foo'
       })
@@ -108,7 +115,7 @@ describe('lazyProperties', async () => {
       expectTypeOf(target).toEqualTypeOf<string>()
     })
 
-    it('lazy() provided generics', async () => {
+    it('lazy() provided generics', () => {
       type Input = {
         inputName: string
       }
@@ -123,10 +130,119 @@ describe('lazyProperties', async () => {
     })
   })
 
-  describe('lazyTree() type checks', async () => {
-    it('lazyTree() no generics', async () => {
+  describe('lazyTree() ParentKey type checks', () => {
+    it('lazyTree() no generics', () => {
+      type Person = {
+        id: string,
+        name: string,
+        a: {
+          deep: {
+            id: string,
+            property: {
+              value: string
+            }
+          }
+        }
+      }
+      const customParentKey = '__parent__'
+
+      const PEOPLE = staticRecords<Person>('Person', {
+        filler: makeLazyFiller({
+          lazyTree: true,
+          parentKey: customParentKey,
+        }),
+      })
+
+      const DAN = PEOPLE.define(
+        'DAN',
+        () => ({
+          name: 'Dan',
+          a: {
+            deep: {
+              id: 'test-id',
+              // test default lazyTree generics
+              property: lazyTree<
+                Person['a']['deep']['property'],
+                Person['a']['deep'],
+                Person,
+                typeof customParentKey
+              >((parent) => {
+                expect(parent).toEqual({
+                  __parent__: {
+                    __parent__: {
+                      __parent__: undefined,
+                      a: undefined,
+                      id: 'DAN',
+                      name: 'Dan',
+                      [PROXY_KEY]: 'parent.a',
+                      [recordTypeKey]: 'Person',
+                    },
+                    deep: undefined,
+                    [PROXY_KEY]: 'parent.deep',
+                  },
+                  id: 'test-id',
+                  property: undefined,
+                  [PROXY_KEY]: 'parent.property',
+                  [LAZY_PROPS]: new Set(['property']),
+                })
+
+                return {
+                  value: 'bar',
+                }
+              }),
+            },
+          },
+        }),
+      )
+
+      const SAM = PEOPLE.define(
+        'Sam',
+        () => ({
+          name: 'Sam',
+          a: {
+            id: 'a-id',
+            deep: {
+              id: 'deep-id',
+              // test overload lazyTree generics
+              property: lazyTree<To<Person, 'a.deep.property', typeof customParentKey>>((parent) => {
+                expect(parent).toEqual({
+                  __parent__: {
+                    __parent__: {
+                      __parent__: undefined,
+                      a: undefined,
+                      id: 'Sam',
+                      name: 'Sam',
+                      [PROXY_KEY]: 'parent.a',
+                      [recordTypeKey]: 'Person',
+                    },
+                    deep: undefined,
+                    id: 'a-id',
+                    [PROXY_KEY]: 'parent.deep',
+                  },
+                  id: 'deep-id',
+                  property: undefined,
+                  [PROXY_KEY]: 'parent.property',
+                  [LAZY_PROPS]: new Set(['property']),
+                })
+
+                return {
+                  value: 'bar',
+                }
+              }),
+            },
+          },
+        }),
+      )
+      PEOPLE.lock()
+      expect(DAN.a.deep.property.value).toEqual('bar')
+      expect(SAM.a.deep.property.value).toEqual('bar')
+    })
+  })
+
+  describe('lazyTree() type checks', () => {
+    it('lazyTree() no generics', () => {
       const target = lazyTree((parent, root) => {
-        expectTypeOf(parent).toEqualTypeOf<HasParent | undefined>()
+        expectTypeOf(parent).toEqualTypeOf<HasParent<Rec, 'parent'> | undefined>()
         expectTypeOf(root).toEqualTypeOf<RootBase>()
 
         return 'foo'
@@ -135,7 +251,7 @@ describe('lazyProperties', async () => {
       expectTypeOf(target).toEqualTypeOf<string>()
     })
 
-    it('lazyTree<T>()', async () => {
+    it('lazyTree<T>()', () => {
       type T = {
         foo: string
       }
@@ -152,14 +268,14 @@ describe('lazyProperties', async () => {
       expectTypeOf(target).toEqualTypeOf<T>()
     })
 
-    it('lazyTree<T, Parent>()', async () => {
+    it('lazyTree<T, Parent>()', () => {
       type T = {
         foo: string
       }
 
-      type Parent = HasParent & {
+      type Parent = HasParent<{
         parentName: string
-      }
+      }>
 
       const target = lazyTree<T, Parent>((parent, root) => {
         expectTypeOf(parent).toEqualTypeOf<Parent>()
@@ -173,13 +289,13 @@ describe('lazyProperties', async () => {
       expectTypeOf(target).toEqualTypeOf<T>()
     })
 
-    it('lazyTree() provided generics', async () => {
+    it('lazyTree() provided generics', () => {
       type Input = {
         inputName: string
       }
-      type Parent = HasParent & {
+      type Parent = HasParent<{
         parentName: string,
-      }
+      }>
       type Root = RootBase & {
         id: string,
         rootName: string,

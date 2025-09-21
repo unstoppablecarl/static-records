@@ -9,6 +9,7 @@ import { TESTS as factoryAdvancedTests } from '../readme/code/static-records-fac
 import { TESTS as lazyProps } from '../readme/code/lazy-props'
 import { TESTS as lazyTree } from '../readme/code/lazy-tree'
 import { TESTS as resolverArgs } from '../readme/code/resolver-args'
+import { TESTS as lazyTreePropertyKey } from '../readme/code/lazy-tree-property-key'
 
 import type { TestCase } from '../readme/types'
 
@@ -39,6 +40,9 @@ describe('readme tests', async () => {
   })
   describe('lazy-tree.ts', async () => {
     runTests(lazyTree)
+  })
+  describe('lazy-tree-property-key.ts', async () => {
+    runTests(lazyTreePropertyKey)
   })
   describe('resolver-args.ts', async () => {
     runTests(resolverArgs)

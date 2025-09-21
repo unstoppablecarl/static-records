@@ -1,10 +1,10 @@
-// Stryker disable next-line all
-/* v8 ignore next -- @preserve */
 import type { NeverProtoKeys } from './type-util'
 
+// Stryker disable next-line all
+/* v8 ignore next -- @preserve */
 export const recordTypeKey: unique symbol = Symbol(__DEV__ ? 'Record Type' : '')
 
-export const isStaticRecord = (obj: any) => obj?.[recordTypeKey] !== undefined
+export const isStaticRecord = (obj: any): obj is HasRecordKey => obj?.[recordTypeKey] !== undefined
 
 export const getRecordType = (obj: any) => obj?.[recordTypeKey]
 

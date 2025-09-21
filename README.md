@@ -663,9 +663,10 @@ const DAN = PEOPLE.define(
     name: 'Dan',
     extra: {
       id: 'abc',
+      // lazyTree with no specific types
       slug: lazyTree((parent, root) => {
         return {
-          slugId: 'slugId: ' + parent?.id,
+          slugId: 'slugId and Name: ' + parent?.id + ' ' + parent?.parent?.name,
           rootName: 'rootName: ' + root.name,
         }
       }),
@@ -679,12 +680,13 @@ const DAN = PEOPLE.define(
           Person
         >((parent1, root) => {
           return {
-            idFromParent: 'idFromParent: ' + parent1.parent?.id,
-            idFromRoot: 'idFromRoot: ' + (root as Person).extra.id,
+            idFromParent: 'idFromParent: ' + parent1?.parent?.id,
+            idFromRoot: 'idFromRoot: ' + root.extra.id,
             child: {
               even: lazyTree<
                 // use the To<> helper to provide the return type, parent, and root automatically
-                // To<> will autocomplete the dot path properties based on the first arg (Person)
+                // it will autocomplete the dot path properties based on the first arg (Person)
+                // and will also handle parent chains
                 To<Person, 'extra.deep.property.child.even'>
               >((parent) => {
                 return {
@@ -702,8 +704,90 @@ const DAN = PEOPLE.define(
 )
 PEOPLE.lock()
 
-DAN.meta.slug.slugId // 'slugId: abc'
+DAN.meta.slug.slugId // 'slugId and Name: abc Dan'
 DAN.meta.slug.rootName // 'rootName: Dan'
+DAN.extra.deep.property.idFromParent // 'idFromParent: abc'
+DAN.extra.deep.property.idFromRoot // 'idFromRoot: abc'
+DAN.extra.deep.property.child.even.deeper.idFromAncestor // 'idFromAncestor: idFromParent: abc'
+```
+<!-- end-doc-gen -->
+
+
+##### Lazy Tree Resolvers Custom Parent Key
+How do use a custom parent key.
+<!-- doc-gen CODE src="./readme/code/lazy-tree-property-key.ts" test=true -->
+```ts
+import { lazyTree, makeLazyFiller, staticRecords, type To } from 'static-records'
+
+type Person = {
+  readonly id: string,
+  readonly name: string,
+  readonly extra: {
+    readonly id: string,
+    readonly deep: {
+      readonly property: {
+        readonly idFromParent: string,
+        readonly idFromRoot: string,
+        readonly child: {
+          readonly even: {
+            readonly deeper: {
+              readonly idFromAncestor: string
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+const customParentKey = '__parent'
+
+const PEOPLE = staticRecords<Person>('Person', {
+  filler: makeLazyFiller({
+    lazyTree: true,
+    parentKey: customParentKey,
+  }),
+})
+
+const DAN = PEOPLE.define(
+  'DAN',
+  () => ({
+    name: 'Dan',
+    extra: {
+      id: 'abc',
+      deep: {
+        property: lazyTree<
+          // return type
+          Person['extra']['deep']['property'],
+          // parent
+          Person['extra']['deep'],
+          // root,
+          Person,
+          // override default parent key from 'parent' to '__parent'
+          typeof customParentKey
+        >((parent, root) => {
+          return {
+            idFromParent: 'idFromParent: ' + parent?.__parent?.id,
+            idFromRoot: 'idFromRoot: ' + root.extra.id,
+            child: {
+              even: lazyTree<
+                To<Person, 'extra.deep.property.child.even', typeof customParentKey>
+              >((parent) => {
+                return {
+                  deeper: {
+                    idFromAncestor: 'idFromAncestor: ' + parent?.__parent?.idFromParent,
+                  },
+                }
+              }),
+            },
+          }
+        }),
+      },
+    },
+  }),
+)
+PEOPLE.lock()
+
 DAN.extra.deep.property.idFromParent // 'idFromParent: abc'
 DAN.extra.deep.property.idFromRoot // 'idFromRoot: abc'
 DAN.extra.deep.property.child.even.deeper.idFromAncestor // 'idFromAncestor: idFromParent: abc'

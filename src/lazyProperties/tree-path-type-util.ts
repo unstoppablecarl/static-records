@@ -54,9 +54,13 @@ export type ParentAtPath<T, Path extends readonly any[], ParentKey extends strin
             : AtPath<T, Init> & { [K in ParentKey]: ParentAtPath<T, Init, ParentKey> }
         : never;
 
-// string-based wrappers that enforce P to be a valid DotPaths<RETURN>
+// string-based wrappers that enforces P to be a valid DotPaths<RETURN>
 // (so you get autocomplete)
 export type Path<T, P extends DotPaths<T>> = AtPath<T, Split<P>>;
-export type PathParent<T, P extends DotPaths<T>> = ParentAtPath<T, Split<P>>;
+export type PathParent<
+  T,
+  P extends DotPaths<T>,
+  ParentKey extends string = 'parent'
+> = ParentAtPath<T, Split<P>, ParentKey>;
 
 

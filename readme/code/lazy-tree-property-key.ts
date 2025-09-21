@@ -6,10 +6,6 @@ type Person = {
   readonly name: string,
   readonly extra: {
     readonly id: string,
-    readonly slug: {
-      slugId: string,
-      rootName: string,
-    }
     readonly deep: {
       readonly property: {
         readonly idFromParent: string,
@@ -26,9 +22,12 @@ type Person = {
   }
 }
 
+const customParentKey = '__parent'
+
 const PEOPLE = staticRecords<Person>('Person', {
   filler: makeLazyFiller({
     lazyTree: true,
+    parentKey: customParentKey,
   }),
 })
 
@@ -38,13 +37,6 @@ const DAN = PEOPLE.define(
     name: 'Dan',
     extra: {
       id: 'abc',
-      // lazyTree with no specific types
-      slug: lazyTree((parent, root) => {
-        return {
-          slugId: 'slugId and Name: ' + parent?.id + ' ' + parent?.parent?.name,
-          rootName: 'rootName: ' + root.name,
-        }
-      }),
       deep: {
         property: lazyTree<
           // return type
@@ -52,21 +44,20 @@ const DAN = PEOPLE.define(
           // parent
           Person['extra']['deep'],
           // root,
-          Person
-        >((parent1, root) => {
+          Person,
+          // override default parent key from 'parent' to '__parent'
+          typeof customParentKey
+        >((parent, root) => {
           return {
-            idFromParent: 'idFromParent: ' + parent1?.parent?.id,
+            idFromParent: 'idFromParent: ' + parent?.__parent?.id,
             idFromRoot: 'idFromRoot: ' + root.extra.id,
             child: {
               even: lazyTree<
-                // use the To<> helper to provide the return type, parent, and root automatically
-                // it will autocomplete the dot path properties based on the first arg (Person)
-                // and will also handle parent chains
-                To<Person, 'extra.deep.property.child.even'>
+                To<Person, 'extra.deep.property.child.even', typeof customParentKey>
               >((parent) => {
                 return {
                   deeper: {
-                    idFromAncestor: 'idFromAncestor: ' + parent?.parent?.idFromParent,
+                    idFromAncestor: 'idFromAncestor: ' + parent?.__parent?.idFromParent,
                   },
                 }
               }),
@@ -80,16 +71,6 @@ const DAN = PEOPLE.define(
 PEOPLE.lock()
 
 export const TESTS: TestCase[] = [
-  {
-    key: 'DAN.meta.slug.slugId',
-    actual: DAN.extra.slug.slugId,
-    expected: 'slugId and Name: abc Dan',
-  },
-  {
-    key: 'DAN.meta.slug.rootName',
-    actual: DAN.extra.slug.rootName,
-    expected: 'rootName: Dan',
-  },
   {
     key: 'DAN.extra.deep.property.idFromParent',
     actual: DAN.extra.deep.property.idFromParent,
