@@ -43,12 +43,18 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ env.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          key: ${{ runner.os }}-pnpm-store-v2-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
-            ${{ runner.os }}-pnpm-store-
+            ${{ runner.os }}-pnpm-store-v2-
 
       - name: Install deps
-        run: pnpm install
+        run: |
+          # Clean install on cache miss or integrity issues
+          if ! pnpm install; then
+            echo "Install failed, clearing store and retrying..."
+            pnpm store prune
+            pnpm install
+          fi
 
       - name: Build
         run: pnpm build
