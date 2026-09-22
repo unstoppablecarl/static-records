@@ -3,12 +3,12 @@ import type { NeverProtoKeys, Rec } from './type-util'
 
 export type StaticRecords<
   Item extends HasId,
-  ProtoItem extends DefaultProtoItem = DefaultProtoItem,
+  ProtoItem extends DefaultProtoItem<string | number> = DefaultProtoItem,
   Input extends Rec = NeverProtoKeys<Item, ProtoItem>,
 > = {
-  define(id: string, definer: Definer<ProtoItem, Input>): WithRecordType<Item>,
-  get(id: string): WithRecordType<Item>,
-  has(id: string): boolean,
+  define(id: ProtoItem['id'], definer: Definer<ProtoItem, Input>): WithRecordType<Item>,
+  get(id: Item['id']): WithRecordType<Item>,
+  has(id: Item['id']): boolean,
   lock(): void,
   locked(): boolean,
   toArray(): WithRecordType<Item>[],
@@ -32,7 +32,7 @@ export type Options<
 
 export type Creator<
   ProtoItem extends HasId
-> = (id: string, recordType: string) => ProtoItem
+> = (id: ProtoItem['id'], recordType: string) => ProtoItem
 
 export type Filler<
   ProtoItem extends HasId,
@@ -45,7 +45,7 @@ export type Locker<
 
 export function staticRecords<
   Item extends HasId,
-  ProtoItem extends DefaultProtoItem = DefaultProtoItem,
+  ProtoItem extends DefaultProtoItem<string | number> = DefaultProtoItem,
   Input extends Rec = NeverProtoKeys<Item, ProtoItem>,
 >(
   recordType: string,
@@ -63,12 +63,12 @@ export function staticRecords<
   const locker = options?.locker
 
   return {
-    define(id: string, definer: Factory): ItemWithKey {
+    define(id: ProtoItem['id'], definer: Factory): ItemWithKey {
       if (locked) {
         throw new Error(`Cannot define() after locking Static Records "${recordType}".`)
       }
 
-      if (staticData[id]) {
+      if (staticData[String(id)]) {
         throw new Error(`A Static Record Type "${recordType}" with id "${id}" already exists.`)
       }
 
@@ -76,8 +76,8 @@ export function staticRecords<
       // will become externally: an ItemWithKey
       const item = creator(id, recordType) as unknown as ItemWithKey
 
-      staticData[id] = item
-      definers.set(id, definer)
+      staticData[String(id)] = item
+      definers.set(String(id), definer)
 
       return item
     },
@@ -85,10 +85,10 @@ export function staticRecords<
       if (locked) {
         throw new Error(`Cannot lock() when Static Record Type "${recordType}" is already locked.`)
       }
-      let records = Object.values(staticData)
+      let entries = Object.entries(staticData)
 
-      records.forEach(item => {
-        const definer = definers.get(item.id) as Factory
+      entries.forEach(([id, item]) => {
+        const definer = definers.get(id) as Factory
         // at this point `item` is a ProtoItem,
         // but it is externally exposed as an Item type
         filler(
@@ -98,7 +98,7 @@ export function staticRecords<
       })
 
       if (locker !== undefined) {
-        records.forEach(item => {
+        entries.forEach(([, item]) => {
           locker(item)
         })
       }
@@ -106,15 +106,15 @@ export function staticRecords<
       definers.clear()
       locked = true
     },
-    get(id: string): ItemWithKey {
-      const result = staticData[id]
+    get(id: Item['id']): ItemWithKey {
+      const result = staticData[String(id)]
       if (result === undefined) {
         throw new Error(`Cannot find a Static Record Type "${recordType}" with id "${id}".`)
       }
 
       return result
     },
-    has: (id: string) => staticData[id] !== undefined,
+    has: (id: Item['id']) => staticData[String(id)] !== undefined,
     locked: () => locked,
     toObject() {
       return {
@@ -125,7 +125,7 @@ export function staticRecords<
   }
 }
 
-function defaultCreator<ProtoItem extends DefaultProtoItem>(id: string, recordType: string) {
+function defaultCreator<ProtoItem extends DefaultProtoItem<string | number>>(id: ProtoItem['id'], recordType: string) {
   return {
     id,
     [recordTypeKey]: recordType,

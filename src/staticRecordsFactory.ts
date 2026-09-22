@@ -12,13 +12,13 @@ export type IfNever<
 
 export type MakeOptionsInput<
   Item extends HasId,
-  ProtoItem extends DefaultProtoItem = DefaultProtoItem,
+  ProtoItem extends DefaultProtoItem<string | number> = DefaultProtoItem,
   Input extends Rec = never,
 > = NeverProtoKeys<IfNever<Input, Item>, ProtoItem>
 
 export function staticRecordsFactory<
   BaseItem extends HasId,
-  BaseProtoItem extends DefaultProtoItem = DefaultProtoItem,
+  BaseProtoItem extends DefaultProtoItem<string | number> = DefaultProtoItem,
   BaseInput extends Rec = never
 >(defaultOptions?: Options<
   BaseItem,

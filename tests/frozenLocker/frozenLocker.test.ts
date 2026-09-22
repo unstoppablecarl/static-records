@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { frozenLocker, recordTypeKey, staticRecords } from '../../src'
+import { type DefaultProtoItem, frozenLocker, recordTypeKey, staticRecords } from '../../src'
 
 describe('frozenLocker', () => {
   type Driver = {
@@ -23,7 +23,7 @@ describe('frozenLocker', () => {
     backup?: Driver,
   }
 
-  const DRIVERS = staticRecords<Driver, never, DriverInput>('DRIVER', {
+  const DRIVERS = staticRecords<Driver, DefaultProtoItem, DriverInput>('DRIVER', {
     locker: frozenLocker,
   })
 

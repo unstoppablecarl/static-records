@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { lazy, type Lazy, lazyTree, makeLazyFiller, recordTypeKey, staticRecords } from '../../src'
+import { type DefaultProtoItem, lazy, type Lazy, lazyTree, makeLazyFiller, recordTypeKey, staticRecords } from '../../src'
 import { isProxy } from './_helpers/_helpers'
 import { getLazyProps } from '../../src/lazyProperties/trackLazyProps'
 
@@ -18,7 +18,7 @@ describe('makeLazyFiller frozen', () => {
     location: Lazy<string>
   }
 
-  const DRIVERS = staticRecords<Driver, never, DriverInput>('DRIVER', {
+  const DRIVERS = staticRecords<Driver, DefaultProtoItem, DriverInput>('DRIVER', {
     filler: makeLazyFiller({ freeze: true }),
   })
 

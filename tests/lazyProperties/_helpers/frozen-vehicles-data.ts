@@ -1,4 +1,4 @@
-import { lazy, type Lazy, makeLazyFiller, staticRecords } from '../../../src'
+import { type DefaultProtoItem, lazy, type Lazy, makeLazyFiller, staticRecords } from '../../../src'
 import { DAN } from './frozen-drivers-data'
 
 type Vehicle = {
@@ -14,7 +14,7 @@ type VehicleInput = {
   driverIsAdult?: Lazy<boolean>,
 }
 
-export const VEHICLES = staticRecords<Vehicle, never, VehicleInput>('VEHICLE', {
+export const VEHICLES = staticRecords<Vehicle, DefaultProtoItem, VehicleInput>('VEHICLE', {
   filler: makeLazyFiller({ freeze: true }),
 })
 
