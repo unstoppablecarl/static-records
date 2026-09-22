@@ -3,6 +3,12 @@ name: Release
 on:
   release:
     types: [published]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (skip actual publish to registry)'
+        type: boolean
+        default: true
 
 jobs:
   release:
@@ -38,6 +44,6 @@ jobs:
         run: pnpm build
 
       - name: Publish
-        run: npm stage publish --access public --provenance --no-git-checks
+        run: npm stage publish --access public --provenance${{ (github.event_name == 'workflow_dispatch' && inputs.dry_run) && ' --dry-run' || '' }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
