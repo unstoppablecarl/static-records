@@ -1,7 +1,7 @@
 {
   "name": "static-records",
   "type": "module",
-  "version": "1.10.4",
+  "version": "1.10.5",
   "packageManager": "pnpm@10.16.0",
   "description": "Static immutable relational data for js",
   "author": {
