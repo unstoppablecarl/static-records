@@ -35,6 +35,6 @@ jobs:
         run: pnpm build
 
       - name: Publish
-        run: pnpm stage publish --access public --provenance --no-git-checks
+        run: npm stage publish --access public --provenance --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
